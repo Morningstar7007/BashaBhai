@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "624728489443",
+    "project_id": "bashabhai-f2a1f",
+    "storage_bucket": "bashabhai-f2a1f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:624728489443:android:fc074207cd78c8f884f4d6",
+        "android_client_info": {
+          "package_name": "com.example.bashabhai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "624728489443-fp4f0ribqvdi9nuefav9au6cqkfl4lrq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bashabhai",
+            "certificate_hash": "6ca2229e9b167d5e93d6cd459364948bb832fbae"
+          }
+        },
+        {
+          "client_id": "624728489443-uh21biruaq8lruqlaco6e871t5bf4i0p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAtmhIXzAfFVmEWbpHukZyURpjWAy3WEcc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "624728489443-uh21biruaq8lruqlaco6e871t5bf4i0p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
