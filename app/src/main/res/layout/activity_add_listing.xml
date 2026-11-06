@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Post a New Listing"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp"/>
+
+        <EditText
+            android:id="@+id/etTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Title (e.g. 1 Room in Dhanmondi)"
+            android:inputType="text"
+            android:minHeight="48dp"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Type (e.g. Room, Flat, Mess Seat)"
+            android:inputType="text"
+            android:minHeight="48dp"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etRent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Monthly Rent (BDT)"
+            android:inputType="numberDecimal"
+            android:minHeight="48dp"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Location / Address"
+            android:inputType="textPostalAddress"
+            android:minHeight="48dp"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etPhone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Contact Phone Number"
+            android:inputType="phone"
+            android:minHeight="48dp"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etAmenities"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Amenities (e.g. WiFi, Water, Gas)"
+            android:inputType="text"
+            android:minHeight="48dp"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etGender"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Gender Preference (Male/Female/Any)"
+            android:inputType="text"
+            android:minHeight="48dp"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Description (Details about the place)"
+            android:inputType="textMultiLine"
+            android:lines="3"
+            android:minHeight="48dp"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/btnSubmitListing"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Post Listing"
+            android:layout_marginBottom="16dp"/>
+
+    </LinearLayout>
+</ScrollView>

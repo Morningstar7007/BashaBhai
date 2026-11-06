@@ -6,7 +6,14 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.content.Intent;
+
 import com.example.bashabhai.databinding.ActivityMainBinding;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private ListingAdapter adapter;
+    private DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,13 +32,13 @@ public class MainActivity extends AppCompatActivity {
 
         setupRecyclerView();
 
+        databaseReference = FirebaseDatabase.getInstance().getReference("Listings");
+
         binding.fabAddListing.setOnClickListener(v -> {
-            Toast.makeText(this, "Add listing clicked", Toast.LENGTH_SHORT).show();
-            // TODO: Navigate to AddListingActivity in Step 3
+            startActivity(new Intent(MainActivity.this, AddListingActivity.class));
         });
         
-        // Dummy data for Step 2 testing
-        loadDummyData();
+        fetchListingsFromDatabase();
     }
 
     private void setupRecyclerView() {
@@ -42,12 +50,24 @@ public class MainActivity extends AppCompatActivity {
         binding.recyclerView.setAdapter(adapter);
     }
     
-    private void loadDummyData() {
-        List<Listing> dummies = new ArrayList<>();
-        dummies.add(new Listing("1", "landlord1", "Spacious Room Near Campus", "Room", 3500.0, "Dhanmondi 27", "Good room", "WiFi, Water", "Male", false, 0.0, 0.0, "01700000000"));
-        dummies.add(new Listing("2", "landlord2", "2-Bed Flat", "Flat", 15000.0, "Panthapath", "Nice flat", "Gas, Water", "Any", false, 0.0, 0.0, "01800000000"));
-        dummies.add(new Listing("3", "landlord3", "Mess Seat Available", "Mess Seat", 2000.0, "Farmgate", "Student mess", "Meal, WiFi", "Female", true, 0.0, 0.0, "01900000000"));
-        
-        adapter.setListings(dummies);
+    private void fetchListingsFromDatabase() {
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                List<Listing> fetchedListings = new ArrayList<>();
+                for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+                    Listing listing = postSnapshot.getValue(Listing.class);
+                    if (listing != null) {
+                        fetchedListings.add(listing);
+                    }
+                }
+                adapter.setListings(fetchedListings);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(MainActivity.this, "Failed to load listings.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
