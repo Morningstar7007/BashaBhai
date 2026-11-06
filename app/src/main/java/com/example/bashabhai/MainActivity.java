@@ -15,6 +15,8 @@ import android.net.ConnectivityManager;
 import android.os.Build;
 
 import com.example.bashabhai.databinding.ActivityMainBinding;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -30,12 +32,17 @@ public class MainActivity extends AppCompatActivity {
     private ListingAdapter adapter;
     private DatabaseReference databaseReference;
     private NetworkChangeReceiver networkReceiver;
+    private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener authStateListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        mAuth = FirebaseAuth.getInstance();
+        setupAuthStateListener();
 
         setupRecyclerView();
 
@@ -80,6 +87,56 @@ public class MainActivity extends AppCompatActivity {
         startService(new Intent(this, NewListingService.class));
     }
     
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mAuth != null && authStateListener != null) {
+            mAuth.addAuthStateListener(authStateListener);
+        }
+        checkUserStatus();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mAuth != null && authStateListener != null) {
+            mAuth.removeAuthStateListener(authStateListener);
+        }
+    }
+
+    private void setupAuthStateListener() {
+        authStateListener = firebaseAuth -> {
+            FirebaseUser user = firebaseAuth.getCurrentUser();
+            if (user == null) {
+                forceLogout(null);
+            }
+        };
+    }
+
+    private void checkUserStatus() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) {
+            forceLogout(null);
+        } else {
+            user.reload().addOnCompleteListener(task -> {
+                if (!task.isSuccessful()) {
+                    forceLogout("Account has been deleted or disabled.");
+                }
+            });
+        }
+    }
+
+    private void forceLogout(String reason) {
+        if (reason != null) {
+            Toast.makeText(this, reason, Toast.LENGTH_LONG).show();
+        }
+        mAuth.signOut();
+        Intent intent = new Intent(MainActivity.this, WelcomeActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();

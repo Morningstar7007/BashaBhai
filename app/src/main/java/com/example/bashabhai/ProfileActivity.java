@@ -53,6 +53,26 @@ public class ProfileActivity extends AppCompatActivity {
         binding.btnLogout.setOnClickListener(v -> logout());
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkUserStatus();
+    }
+
+    private void checkUserStatus() {
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            logout();
+        } else {
+            currentUser.reload().addOnCompleteListener(task -> {
+                if (!task.isSuccessful()) {
+                    Toast.makeText(ProfileActivity.this, "Account has been deleted or disabled.", Toast.LENGTH_LONG).show();
+                    logout();
+                }
+            });
+        }
+    }
+
     private void fetchUserData() {
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

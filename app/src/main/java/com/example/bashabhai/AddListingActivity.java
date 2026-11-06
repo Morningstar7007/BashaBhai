@@ -4,6 +4,8 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.bashabhai.databinding.ActivityAddListingBinding;
 import com.google.firebase.auth.FirebaseAuth;
@@ -21,6 +23,13 @@ public class AddListingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityAddListingBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
+            int imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
+            int systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), Math.max(imeHeight, systemBars));
+            return insets;
+        });
 
         mAuth = FirebaseAuth.getInstance();
         // Initialize Firebase Realtime Database

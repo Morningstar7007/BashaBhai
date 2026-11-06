@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     android:background="@color/background">
 
     <LinearLayout
@@ -78,6 +79,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
+            app:hintEnabled="false"
             app:hintTextColor="@color/primary"
             app:boxStrokeColor="@color/primary"
             android:textColorHint="@color/text_secondary"
@@ -87,7 +89,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/on_background"
-                android:textColorHint="@color/text_secondary"
+                android:textColorHint="#9CA3AF"
                 android:hint="Location / Address"
                 android:inputType="textPostalAddress"/>
         </com.google.android.material.textfield.TextInputLayout>
@@ -150,6 +152,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
+            app:hintEnabled="false"
             app:hintTextColor="@color/primary"
             app:boxStrokeColor="@color/primary"
             android:textColorHint="@color/text_secondary"
@@ -159,7 +162,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/on_background"
-                android:textColorHint="@color/text_secondary"
+                android:textColorHint="#9CA3AF"
                 android:hint="Description (Details about the place)"
                 android:inputType="textMultiLine"
                 android:lines="3"/>
