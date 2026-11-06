@@ -40,6 +40,7 @@ public class LoginActivity extends AppCompatActivity {
         if (mAuth.getCurrentUser() != null) {
             startActivity(new Intent(this, MainActivity.class));
             finish();
+            return;
         }
 
         // Configure Google Sign In

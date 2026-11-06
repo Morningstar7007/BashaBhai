@@ -4,9 +4,15 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.os.Build;
 
 import com.example.bashabhai.databinding.ActivityMainBinding;
 import com.google.firebase.database.DataSnapshot;
@@ -23,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private ListingAdapter adapter;
     private DatabaseReference databaseReference;
+    private NetworkChangeReceiver networkReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,14 +44,55 @@ public class MainActivity extends AppCompatActivity {
         binding.fabAddListing.setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, AddListingActivity.class));
         });
+
+        // Setup Bottom Navigation
+        binding.bottomNavigation.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                return true;
+            } else if (itemId == R.id.nav_favorites) {
+                startActivity(new Intent(MainActivity.this, FavoritesActivity.class));
+                return false;
+            } else if (itemId == R.id.nav_profile) {
+                startActivity(new Intent(MainActivity.this, ProfileActivity.class));
+                return false;
+            }
+            return false;
+        });
         
         fetchListingsFromDatabase();
+        
+        // Topic 10: Broadcast Receiver for network changes
+        networkReceiver = new NetworkChangeReceiver();
+        registerReceiver(networkReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        
+        // Topic 10: Service for checking new listings
+        checkNotificationPermissionAndStartService();
+    }
+    
+    private void checkNotificationPermissionAndStartService() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+                return;
+            }
+        }
+        startService(new Intent(this, NewListingService.class));
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (networkReceiver != null) {
+            unregisterReceiver(networkReceiver);
+        }
     }
 
     private void setupRecyclerView() {
         adapter = new ListingAdapter(listing -> {
-            Toast.makeText(this, "Clicked: " + listing.getTitle(), Toast.LENGTH_SHORT).show();
-            // TODO: Navigate to ListingDetailActivity in Step 4
+            Intent intent = new Intent(MainActivity.this, ListingDetailActivity.class);
+            intent.putExtra("LISTING", listing);
+            startActivity(intent);
         });
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
         binding.recyclerView.setAdapter(adapter);
