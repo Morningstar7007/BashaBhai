@@ -4,7 +4,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Patterns;
 import android.view.View;
+import android.widget.RadioButton;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -19,17 +23,21 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class LoginActivity extends AppCompatActivity {
 
     private ActivityLoginBinding binding;
     private FirebaseAuth mAuth;
+    private boolean isSubmitting = false;
     
     private GoogleSignInClient mGoogleSignInClient;
     private ActivityResultLauncher<Intent> googleSignInLauncher;
@@ -74,53 +82,145 @@ public class LoginActivity extends AppCompatActivity {
                             GoogleSignInAccount account = task.getResult(ApiException.class);
                             if (account != null) {
                                 firebaseAuthWithGoogle(account);
+                            } else {
+                                setLoadingState(false, null);
                             }
                         } catch (ApiException e) {
+                            setLoadingState(false, null);
                             showMessage("Google sign in failed: " + e.getMessage(), true);
                         }
+                    } else {
+                        setLoadingState(false, null);
                     }
                 });
 
+        setupTextWatchers();
+
         binding.btnLogin.setOnClickListener(v -> {
-            String email = binding.etEmail.getText().toString().trim();
-            String password = binding.etPassword.getText().toString().trim();
-
-            if (email.isEmpty() || password.isEmpty()) {
-                showMessage("Please enter email and password", true);
-                return;
+            if (!isSubmitting) {
+                handleLogin();
             }
+        });
 
-            mAuth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this, task -> {
-                        if (task.isSuccessful()) {
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            if (user != null) {
-                                user.reload().addOnCompleteListener(reloadTask -> {
-                                    if (user.isEmailVerified()) {
-                                        navigateToMain();
-                                    } else {
-                                        mAuth.signOut();
-                                        showMessage("Please verify your email before logging in. Check your inbox!", true);
-                                    }
-                                });
-                            }
-                        } else {
-                            String err = task.getException() != null ? task.getException().getMessage() : "Authentication failed.";
-                            showMessage(err, true);
-                        }
-                    });
+        binding.tvForgotPassword.setOnClickListener(v -> {
+            if (!isSubmitting) {
+                handleForgotPassword();
+            }
         });
 
         binding.btnGoogleSignIn.setOnClickListener(v -> {
-            mGoogleSignInClient.signOut().addOnCompleteListener(task -> {
-                Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-                googleSignInLauncher.launch(signInIntent);
-            });
+            if (!isSubmitting) {
+                setLoadingState(true, "Connecting...");
+                mGoogleSignInClient.signOut().addOnCompleteListener(task -> {
+                    Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+                    googleSignInLauncher.launch(signInIntent);
+                });
+            }
         });
 
         binding.tvRegisterLabel.setOnClickListener(v -> {
             startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
         });
+    }
+
+    private void setupTextWatchers() {
+        binding.etEmail.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                binding.tilEmail.setError(null);
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+
+        binding.etPassword.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                binding.tilPassword.setError(null);
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void handleLogin() {
+        String email = binding.etEmail.getText().toString().trim();
+        String password = binding.etPassword.getText().toString().trim();
+
+        boolean isValid = true;
+
+        if (email.isEmpty()) {
+            binding.tilEmail.setError("Email is required");
+            isValid = false;
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            binding.tilEmail.setError("Please enter a valid email address");
+            isValid = false;
+        }
+
+        if (password.isEmpty()) {
+            binding.tilPassword.setError("Password is required");
+            isValid = false;
+        }
+
+        if (!isValid) return;
+
+        setLoadingState(true, "Signing In...");
+
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            user.reload().addOnCompleteListener(reloadTask -> {
+                                if (user.isEmailVerified()) {
+                                    navigateToMain();
+                                } else {
+                                    mAuth.signOut();
+                                    setLoadingState(false, null);
+                                    showMessage("Please verify your email before logging in. Check your inbox!", true);
+                                }
+                            });
+                        }
+                    } else {
+                        setLoadingState(false, null);
+                        String err = task.getException() != null ? task.getException().getMessage() : "Authentication failed.";
+                        showMessage(err, true);
+                    }
+                });
+    }
+
+    private void handleForgotPassword() {
+        String email = binding.etEmail.getText().toString().trim();
+
+        if (email.isEmpty()) {
+            binding.tilEmail.setError("Enter your email to reset password");
+            return;
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            binding.tilEmail.setError("Please enter a valid email address");
+            return;
+        }
+
+        setLoadingState(true, "Sending Email...");
+
+        mAuth.sendPasswordResetEmail(email)
+                .addOnCompleteListener(task -> {
+                    setLoadingState(false, null);
+                    if (task.isSuccessful()) {
+                        showMessage("Password reset link sent to " + email + ". Please check your inbox!", false);
+                    } else {
+                        String err = task.getException() != null ? task.getException().getMessage() : "Failed to send password reset email.";
+                        showMessage(err, true);
+                    }
+                });
+    }
+
+    private void setLoadingState(boolean isLoading, String text) {
+        isSubmitting = isLoading;
+        if (isLoading) {
+            binding.btnLogin.setText(text != null ? text : "Signing In...");
+        } else {
+            binding.btnLogin.setText("Sign In");
+        }
     }
 
     private void showMessage(String text, boolean isError) {
@@ -141,15 +241,60 @@ public class LoginActivity extends AppCompatActivity {
                         FirebaseUser firebaseUser = mAuth.getCurrentUser();
                         if (firebaseUser != null) {
                             String userId = firebaseUser.getUid();
-                            DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
-                            User newUser = new User(userId, acct.getDisplayName(), acct.getEmail());
-                            usersRef.child(userId).setValue(newUser);
+                            DatabaseReference userRef = FirebaseDb.getRef("Users").child(userId);
+
+                            userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot snapshot) {
+                                    if (snapshot.exists() && snapshot.child("role").getValue() != null) {
+                                        // Existing user with role
+                                        navigateToMain();
+                                    } else {
+                                        // New Google user
+                                        if (acct.getEmail() != null && acct.getEmail().equalsIgnoreCase("admin@bashabhai.com")) {
+                                            User adminUser = new User(userId, acct.getDisplayName(), acct.getEmail(), "ADMIN");
+                                            userRef.setValue(adminUser);
+                                            navigateToMain();
+                                        } else {
+                                            promptRoleSelectionForGoogleUser(userId, acct.getDisplayName(), acct.getEmail());
+                                        }
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError error) {
+                                    navigateToMain();
+                                }
+                            });
+                        } else {
+                            navigateToMain();
                         }
-                        navigateToMain();
                     } else {
+                        setLoadingState(false, null);
                         showMessage("Authentication Failed.", true);
                     }
                 });
+    }
+
+    private void promptRoleSelectionForGoogleUser(String userId, String name, String email) {
+        setLoadingState(false, null);
+
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_google_role, null);
+        RadioButton rbLandlord = dialogView.findViewById(R.id.rbDialogLandlord);
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Welcome to BashaBhai!")
+                .setMessage("Please select your account role to get started:")
+                .setView(dialogView)
+                .setCancelable(false)
+                .setPositiveButton("Continue", (dialog, which) -> {
+                    String role = (rbLandlord != null && rbLandlord.isChecked()) ? "LANDLORD" : "STUDENT";
+                    DatabaseReference userRef = FirebaseDb.getRef("Users").child(userId);
+                    User newUser = new User(userId, name, email, role);
+                    userRef.setValue(newUser);
+                    navigateToMain();
+                })
+                .show();
     }
 
     private void navigateToMain() {

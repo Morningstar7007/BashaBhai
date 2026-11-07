@@ -3,11 +3,18 @@ package com.example.bashabhai;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.bashabhai.databinding.ActivityListingDetailBinding;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 
 public class ListingDetailActivity extends AppCompatActivity {
 
@@ -31,6 +38,7 @@ public class ListingDetailActivity extends AppCompatActivity {
             
             populateUI();
             setupClickListeners();
+            setupRoleControls();
         } else {
             Toast.makeText(this, "Error loading listing details", Toast.LENGTH_SHORT).show();
             finish();
@@ -63,10 +71,89 @@ public class ListingDetailActivity extends AppCompatActivity {
         binding.tvDetailDescription.setText(listing.getDescription());
     }
 
+    private void setupRoleControls() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null || listing == null) return;
+
+        String currentUid = user.getUid();
+        String currentEmail = user.getEmail() != null ? user.getEmail() : "";
+
+        DatabaseReference userRef = FirebaseDb.getRef("Users").child(currentUid);
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                User userProfile = snapshot.getValue(User.class);
+                String role = (userProfile != null && userProfile.getRole() != null) ? userProfile.getRole() : "STUDENT";
+                if (currentEmail.equalsIgnoreCase("admin@bashabhai.com")) {
+                    role = "ADMIN";
+                }
+
+                boolean isOwner = currentUid.equals(listing.getLandlordId()) || "ADMIN".equalsIgnoreCase(role);
+                boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
+
+                if (isOwner) {
+                    binding.llOwnerControls.setVisibility(View.VISIBLE);
+                    updateRentedButtonText();
+                }
+
+                if (isAdmin && "PENDING".equalsIgnoreCase(listing.getStatus())) {
+                    binding.llAdminControls.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {}
+        });
+    }
+
+    private void updateRentedButtonText() {
+        if (listing.isRented() || "RENTED".equalsIgnoreCase(listing.getStatus())) {
+            binding.btnToggleRented.setText("Mark as Available");
+        } else {
+            binding.btnToggleRented.setText("Mark as Rented");
+        }
+    }
+
     private void setupClickListeners() {
         if (listing == null) return;
         
         binding.ivFavorite.setOnClickListener(v -> toggleFavorite());
+
+        binding.btnToggleRented.setOnClickListener(v -> {
+            boolean newRentedState = !listing.isRented();
+            listing.setRented(newRentedState);
+            listing.setStatus(newRentedState ? "RENTED" : "APPROVED");
+            
+            DatabaseReference ref = FirebaseDb.getRef("Listings").child(listing.getId());
+            ref.child("rented").setValue(newRentedState);
+            ref.child("status").setValue(newRentedState ? "RENTED" : "APPROVED");
+            
+            updateRentedButtonText();
+            Toast.makeText(this, newRentedState ? "Marked as Rented" : "Marked as Available", Toast.LENGTH_SHORT).show();
+        });
+
+        binding.btnDeleteListing.setOnClickListener(v -> {
+            DatabaseReference ref = FirebaseDb.getRef("Listings").child(listing.getId());
+            ref.removeValue().addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Toast.makeText(this, "Listing deleted", Toast.LENGTH_SHORT).show();
+                    finish();
+                } else {
+                    Toast.makeText(this, "Failed to delete listing", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
+        binding.btnApproveListing.setOnClickListener(v -> {
+            listing.setStatus("APPROVED");
+            DatabaseReference ref = FirebaseDb.getRef("Listings").child(listing.getId());
+            ref.child("status").setValue("APPROVED").addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Toast.makeText(this, "Listing Approved!", Toast.LENGTH_SHORT).show();
+                    binding.llAdminControls.setVisibility(View.GONE);
+                }
+            });
+        });
 
         // Implicit Intent to Call
         binding.btnCall.setOnClickListener(v -> {

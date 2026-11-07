@@ -31,7 +31,7 @@
         app:cardElevation="2dp"
         app:strokeWidth="0dp"
         app:cardBackgroundColor="@color/surface"
-        android:layout_marginBottom="48dp">
+        android:layout_marginBottom="24dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -75,10 +75,45 @@
                 android:layout_height="wrap_content"
                 android:text="Loading..."
                 android:textSize="18sp"
-                android:textColor="@color/on_surface"/>
+                android:textColor="@color/on_surface"
+                android:layout_marginBottom="16dp"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#E0E0E0"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Account Role"
+                android:textColor="@color/primary"
+                android:textSize="14sp"/>
+
+            <TextView
+                android:id="@+id/tvProfileRole"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="STUDENT"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/secondary"/>
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAdminPanel"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Admin Approvals Panel"
+        android:textSize="16sp"
+        android:textColor="@color/white"
+        app:backgroundTint="#FF9800"
+        android:visibility="gone"
+        android:layout_marginBottom="16dp"
+        app:cornerRadius="8dp"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnLogout"

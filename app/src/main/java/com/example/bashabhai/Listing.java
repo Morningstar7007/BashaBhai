@@ -16,12 +16,18 @@ public class Listing implements Serializable {
     private double latitude;
     private double longitude;
     private String landlordPhone;
+    private String status; // "PENDING", "APPROVED", "REJECTED", "RENTED"
 
     // Required empty public constructor for Firebase
     public Listing() {
+        this.status = "APPROVED"; // Default for legacy/fallback
     }
 
     public Listing(String id, String landlordId, String title, String type, double rent, String location, String description, String amenities, String genderPreference, boolean isRented, double latitude, double longitude, String landlordPhone) {
+        this(id, landlordId, title, type, rent, location, description, amenities, genderPreference, isRented, latitude, longitude, landlordPhone, "PENDING");
+    }
+
+    public Listing(String id, String landlordId, String title, String type, double rent, String location, String description, String amenities, String genderPreference, boolean isRented, double latitude, double longitude, String landlordPhone, String status) {
         this.id = id;
         this.landlordId = landlordId;
         this.title = title;
@@ -35,6 +41,7 @@ public class Listing implements Serializable {
         this.latitude = latitude;
         this.longitude = longitude;
         this.landlordPhone = landlordPhone;
+        this.status = status != null ? status : "PENDING";
     }
 
     public String getId() { return id; }
@@ -75,4 +82,7 @@ public class Listing implements Serializable {
     
     public String getLandlordPhone() { return landlordPhone; }
     public void setLandlordPhone(String landlordPhone) { this.landlordPhone = landlordPhone; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

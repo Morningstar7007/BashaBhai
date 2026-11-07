@@ -1,5 +1,6 @@
 package com.example.bashabhai;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -70,9 +71,19 @@ public class ListingAdapter extends RecyclerView.Adapter<ListingAdapter.ListingV
             binding.tvType.setText(listing.getType());
             binding.tvGender.setText(listing.getGenderPreference());
             binding.tvRent.setText("৳" + listing.getRent());
-            
-            if (listing.isRented()) {
+
+            if (listing.isRented() || "RENTED".equalsIgnoreCase(listing.getStatus())) {
                 binding.tvStatus.setVisibility(View.VISIBLE);
+                binding.tvStatus.setText("STATUS: RENTED");
+                binding.tvStatus.setTextColor(Color.parseColor("#D32F2F"));
+            } else if ("PENDING".equalsIgnoreCase(listing.getStatus())) {
+                binding.tvStatus.setVisibility(View.VISIBLE);
+                binding.tvStatus.setText("STATUS: PENDING ADMIN APPROVAL");
+                binding.tvStatus.setTextColor(Color.parseColor("#FF9800"));
+            } else if ("REJECTED".equalsIgnoreCase(listing.getStatus())) {
+                binding.tvStatus.setVisibility(View.VISIBLE);
+                binding.tvStatus.setText("STATUS: REJECTED");
+                binding.tvStatus.setTextColor(Color.parseColor("#D32F2F"));
             } else {
                 binding.tvStatus.setVisibility(View.GONE);
             }

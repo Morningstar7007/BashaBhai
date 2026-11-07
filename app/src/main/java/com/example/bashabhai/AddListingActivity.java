@@ -9,8 +9,8 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.bashabhai.databinding.ActivityAddListingBinding;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 public class AddListingActivity extends AppCompatActivity {
 
@@ -32,8 +32,7 @@ public class AddListingActivity extends AppCompatActivity {
         });
 
         mAuth = FirebaseAuth.getInstance();
-        // Initialize Firebase Realtime Database
-        databaseReference = FirebaseDatabase.getInstance().getReference("Listings");
+        databaseReference = FirebaseDb.getRef("Listings");
 
         binding.btnSubmitListing.setOnClickListener(v -> submitListing());
     }
@@ -54,22 +53,31 @@ public class AddListingActivity extends AppCompatActivity {
         }
 
         double rent = Double.parseDouble(rentStr);
-        String landlordId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : "Unknown";
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        String landlordId = currentUser != null ? currentUser.getUid() : "Unknown";
+        String userEmail = currentUser != null ? currentUser.getEmail() : "";
         
+        // Initial status: APPROVED if Admin, PENDING if Landlord
+        String initialStatus = (userEmail != null && userEmail.equalsIgnoreCase("admin@bashabhai.com")) ? "APPROVED" : "PENDING";
+
         // Generate a unique ID for the listing
         String listingId = databaseReference.push().getKey();
 
         Listing newListing = new Listing(
                 listingId, landlordId, title, type, rent, location, 
-                description, amenities, gender, false, 0.0, 0.0, phone
+                description, amenities, gender, false, 0.0, 0.0, phone, initialStatus
         );
 
         if (listingId != null) {
             databaseReference.child(listingId).setValue(newListing)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            Toast.makeText(AddListingActivity.this, "Listing added successfully!", Toast.LENGTH_SHORT).show();
-                            finish(); // Close activity and go back to MainActivity
+                            if ("APPROVED".equalsIgnoreCase(initialStatus)) {
+                                Toast.makeText(AddListingActivity.this, "Listing published directly!", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(AddListingActivity.this, "Listing submitted! Pending Admin approval.", Toast.LENGTH_LONG).show();
+                            }
+                            finish();
                         } else {
                             Toast.makeText(AddListingActivity.this, "Failed to add listing.", Toast.LENGTH_SHORT).show();
                         }

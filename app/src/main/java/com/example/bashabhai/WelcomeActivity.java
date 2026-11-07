@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.RadioButton;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -19,12 +20,15 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class WelcomeActivity extends AppCompatActivity {
 
@@ -115,15 +119,57 @@ public class WelcomeActivity extends AppCompatActivity {
                         FirebaseUser firebaseUser = mAuth.getCurrentUser();
                         if (firebaseUser != null) {
                             String userId = firebaseUser.getUid();
-                            DatabaseReference usersRef = FirebaseDatabase.getInstance().getReference("Users");
-                            User newUser = new User(userId, acct.getDisplayName(), acct.getEmail());
-                            usersRef.child(userId).setValue(newUser);
+                            DatabaseReference userRef = FirebaseDb.getRef("Users").child(userId);
+                            
+                            userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot snapshot) {
+                                    if (snapshot.exists() && snapshot.child("role").getValue() != null) {
+                                        // Existing user with role set
+                                        navigateToMain();
+                                    } else {
+                                        // New user via Google Sign-In
+                                        if (acct.getEmail() != null && acct.getEmail().equalsIgnoreCase("admin@bashabhai.com")) {
+                                            User adminUser = new User(userId, acct.getDisplayName(), acct.getEmail(), "ADMIN");
+                                            userRef.setValue(adminUser);
+                                            navigateToMain();
+                                        } else {
+                                            promptRoleSelectionForGoogleUser(userId, acct.getDisplayName(), acct.getEmail());
+                                        }
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError error) {
+                                    navigateToMain();
+                                }
+                            });
+                        } else {
+                            navigateToMain();
                         }
-                        navigateToMain();
                     } else {
                         showMessage("Authentication Failed.", true);
                     }
                 });
+    }
+
+    private void promptRoleSelectionForGoogleUser(String userId, String name, String email) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_google_role, null);
+        RadioButton rbLandlord = dialogView.findViewById(R.id.rbDialogLandlord);
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Welcome to BashaBhai!")
+                .setMessage("Please select your account role to get started:")
+                .setView(dialogView)
+                .setCancelable(false)
+                .setPositiveButton("Continue", (dialog, which) -> {
+                    String role = (rbLandlord != null && rbLandlord.isChecked()) ? "LANDLORD" : "STUDENT";
+                    DatabaseReference userRef = FirebaseDb.getRef("Users").child(userId);
+                    User newUser = new User(userId, name, email, role);
+                    userRef.setValue(newUser);
+                    navigateToMain();
+                })
+                .show();
     }
 
     private void navigateToMain() {

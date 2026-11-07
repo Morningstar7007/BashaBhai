@@ -2,6 +2,7 @@ package com.example.bashabhai;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,7 +16,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -35,20 +35,15 @@ public class ProfileActivity extends AppCompatActivity {
 
         if (currentUser != null) {
             String userId = currentUser.getUid();
-            // If logged in via Google, Name/Email might be on the FirebaseUser object
-            // If logged in via Custom Email, we fetch from Realtime DB
-            
-            if (currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty()) {
-                binding.tvProfileName.setText(currentUser.getDisplayName());
-                binding.tvProfileEmail.setText(currentUser.getEmail());
-            } else {
-                userRef = FirebaseDatabase.getInstance().getReference("Users").child(userId);
-                fetchUserData();
-            }
+            userRef = FirebaseDb.getRef("Users").child(userId);
+            fetchUserData();
         } else {
-            // User not logged in, shouldn't reach here but just in case
             logout();
         }
+
+        binding.btnAdminPanel.setOnClickListener(v -> 
+            startActivity(new Intent(ProfileActivity.this, AdminActivity.class))
+        );
 
         binding.btnLogout.setOnClickListener(v -> logout());
     }
@@ -78,14 +73,26 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 User user = snapshot.getValue(User.class);
-                if (user != null) {
-                    binding.tvProfileName.setText(user.getName());
-                    binding.tvProfileEmail.setText(user.getEmail());
+                FirebaseUser currentUser = mAuth.getCurrentUser();
+                
+                String name = user != null && user.getName() != null ? user.getName() : 
+                        (currentUser != null && currentUser.getDisplayName() != null ? currentUser.getDisplayName() : "User");
+                String email = user != null && user.getEmail() != null ? user.getEmail() : 
+                        (currentUser != null ? currentUser.getEmail() : "");
+                String role = user != null && user.getRole() != null ? user.getRole() : "STUDENT";
+
+                if (email != null && email.equalsIgnoreCase("admin@bashabhai.com")) {
+                    role = "ADMIN";
+                }
+
+                binding.tvProfileName.setText(name);
+                binding.tvProfileEmail.setText(email);
+                binding.tvProfileRole.setText(role);
+
+                if ("ADMIN".equalsIgnoreCase(role)) {
+                    binding.btnAdminPanel.setVisibility(View.VISIBLE);
                 } else {
-                    binding.tvProfileName.setText("Unknown User");
-                    if (mAuth.getCurrentUser() != null) {
-                         binding.tvProfileEmail.setText(mAuth.getCurrentUser().getEmail());
-                    }
+                    binding.btnAdminPanel.setVisibility(View.GONE);
                 }
             }
 
@@ -97,15 +104,11 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void logout() {
-        // Sign out of Firebase
         mAuth.signOut();
-        
-        // Sign out of Google to ensure the account picker shows up next time
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build();
         GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(this, gso);
         googleSignInClient.signOut();
         
-        // Navigate back to Login
         Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
