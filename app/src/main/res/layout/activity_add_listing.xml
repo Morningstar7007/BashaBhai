@@ -27,35 +27,36 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:hintEnabled="false"
-            app:hintTextColor="@color/primary"
             app:boxStrokeColor="@color/primary"
+            app:boxBackgroundColor="@color/surface"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/on_background"
-                android:textColorHint="#9CA3AF"
+                android:textColor="@color/on_surface"
+                android:textColorHint="@color/text_secondary"
                 android:hint="Title (e.g. 1 Room in Dhanmondi)"
                 android:inputType="text"/>
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Dropdown for Type -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:hintEnabled="false"
-            app:hintTextColor="@color/primary"
             app:boxStrokeColor="@color/primary"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etType"
+            app:boxBackgroundColor="@color/surface"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/actType"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/on_background"
-                android:textColorHint="#9CA3AF"
+                android:textColor="@color/on_surface"
+                android:textColorHint="@color/text_secondary"
                 android:hint="Type (e.g. Room, Flat, Mess Seat)"
-                android:inputType="text"/>
+                android:inputType="none"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -63,15 +64,15 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:hintEnabled="false"
-            app:hintTextColor="@color/primary"
             app:boxStrokeColor="@color/primary"
+            app:boxBackgroundColor="@color/surface"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etRent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/on_background"
-                android:textColorHint="#9CA3AF"
+                android:textColor="@color/on_surface"
+                android:textColorHint="@color/text_secondary"
                 android:hint="Monthly Rent (BDT)"
                 android:inputType="numberDecimal"/>
         </com.google.android.material.textfield.TextInputLayout>
@@ -81,17 +82,16 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:hintEnabled="false"
-            app:hintTextColor="@color/primary"
             app:boxStrokeColor="@color/primary"
-            android:textColorHint="@color/text_secondary"
+            app:boxBackgroundColor="@color/surface"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etLocation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/on_background"
-                android:textColorHint="#9CA3AF"
-                android:hint="Location / Address"
+                android:textColor="@color/on_surface"
+                android:textColorHint="@color/text_secondary"
+                android:hint="Location / Address Text"
                 android:inputType="textPostalAddress"/>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -100,15 +100,33 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:hintEnabled="false"
-            app:hintTextColor="@color/primary"
             app:boxStrokeColor="@color/primary"
+            app:boxBackgroundColor="@color/surface"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etMapLink"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/on_surface"
+                android:textColorHint="@color/text_secondary"
+                android:hint="Google Maps Link (Optional)"
+                android:inputType="textUri"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:hintEnabled="false"
+            app:boxStrokeColor="@color/primary"
+            app:boxBackgroundColor="@color/surface"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPhone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/on_background"
-                android:textColorHint="#9CA3AF"
+                android:textColor="@color/on_surface"
+                android:textColorHint="@color/text_secondary"
                 android:hint="Contact Phone Number"
                 android:inputType="phone"/>
         </com.google.android.material.textfield.TextInputLayout>
@@ -118,35 +136,36 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:hintEnabled="false"
-            app:hintTextColor="@color/primary"
             app:boxStrokeColor="@color/primary"
+            app:boxBackgroundColor="@color/surface"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etAmenities"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/on_background"
-                android:textColorHint="#9CA3AF"
+                android:textColor="@color/on_surface"
+                android:textColorHint="@color/text_secondary"
                 android:hint="Amenities (e.g. WiFi, Water, Gas)"
                 android:inputType="text"/>
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Dropdown for Gender Preference -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:hintEnabled="false"
-            app:hintTextColor="@color/primary"
             app:boxStrokeColor="@color/primary"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etGender"
+            app:boxBackgroundColor="@color/surface"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/actGender"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/on_background"
-                android:textColorHint="#9CA3AF"
-                android:hint="Gender Preference (Male/Female/Any)"
-                android:inputType="text"/>
+                android:textColor="@color/on_surface"
+                android:textColorHint="@color/text_secondary"
+                android:hint="Gender Preference"
+                android:inputType="none"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -154,16 +173,15 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
             app:hintEnabled="false"
-            app:hintTextColor="@color/primary"
             app:boxStrokeColor="@color/primary"
-            android:textColorHint="@color/text_secondary"
+            app:boxBackgroundColor="@color/surface"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/on_background"
-                android:textColorHint="#9CA3AF"
+                android:textColor="@color/on_surface"
+                android:textColorHint="@color/text_secondary"
                 android:hint="Description (Details about the place)"
                 android:inputType="textMultiLine"
                 android:lines="3"/>

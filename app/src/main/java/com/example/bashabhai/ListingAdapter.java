@@ -9,6 +9,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.bashabhai.databinding.ItemListingBinding;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,11 +69,46 @@ public class ListingAdapter extends RecyclerView.Adapter<ListingAdapter.ListingV
         }
 
         public void bind(Listing listing) {
+            binding.tvPostNumber.setText(listing.getFormattedPostNumber());
             binding.tvTitle.setText(listing.getTitle());
             binding.tvLocation.setText(listing.getLocation());
             binding.tvType.setText(listing.getType());
             binding.tvGender.setText(listing.getGenderPreference());
             binding.tvRent.setText("৳" + listing.getRent());
+
+            // Fetch Landlord Details (Name & Verification Badge)
+            if (listing.getLandlordId() != null) {
+                FirebaseDb.getRef("Users").child(listing.getLandlordId())
+                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        User user = snapshot.getValue(User.class);
+                        if (user != null) {
+                            boolean isAdminUser = "ADMIN".equalsIgnoreCase(user.getRole()) || 
+                                    (user.getEmail() != null && AdminConfig.isAdmin(user.getEmail()));
+
+                            String name = isAdminUser ? "ADMIN" : 
+                                    (user.getName() != null && !user.getName().isEmpty() ? user.getName() : "Landlord");
+
+                            binding.tvLandlordName.setVisibility(View.VISIBLE);
+                            binding.tvLandlordName.setText("Posted by: " + name);
+
+                            // Admin posts are ALWAYS verified 🟢
+                            if (isAdminUser || user.isVerified() || "APPROVED".equalsIgnoreCase(user.getVerificationStatus())) {
+                                binding.tvVerifiedBadge.setVisibility(View.VISIBLE);
+                            } else {
+                                binding.tvVerifiedBadge.setVisibility(View.GONE);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {}
+                });
+            } else {
+                binding.tvLandlordName.setVisibility(View.GONE);
+                binding.tvVerifiedBadge.setVisibility(View.GONE);
+            }
 
             if (listing.isRented() || "RENTED".equalsIgnoreCase(listing.getStatus())) {
                 binding.tvStatus.setVisibility(View.VISIBLE);

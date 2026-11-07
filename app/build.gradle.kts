@@ -21,10 +21,8 @@ android {
 
     buildTypes {
         release {
-            optimization {
-                enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
-            }
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
     compileOptions {
@@ -43,14 +41,20 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.material)
     
+    // Swipe Refresh Layout
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    
     // Google Sign In
     implementation(libs.play.services.auth)
     
+    // Glide for Image Loading
+    implementation("com.github.bumptech.glide:glide:4.16.0")
     
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-database")
+    implementation("com.google.firebase:firebase-storage")
 
     // Room
     implementation(libs.room.runtime)

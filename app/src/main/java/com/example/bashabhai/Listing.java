@@ -13,21 +13,18 @@ public class Listing implements Serializable {
     private String amenities; // e.g., "WiFi, Water, Electricity"
     private String genderPreference; // e.g., "Male", "Female", "Any"
     private boolean isRented;
-    private double latitude;
-    private double longitude;
+    private String mapLink; // Landlord's provided Google Maps URL
     private String landlordPhone;
     private String status; // "PENDING", "APPROVED", "REJECTED", "RENTED"
+    private int postNumber; // Human-readable unique serial number (e.g. 1001)
 
     // Required empty public constructor for Firebase
     public Listing() {
         this.status = "APPROVED"; // Default for legacy/fallback
+        this.postNumber = 1000;
     }
 
-    public Listing(String id, String landlordId, String title, String type, double rent, String location, String description, String amenities, String genderPreference, boolean isRented, double latitude, double longitude, String landlordPhone) {
-        this(id, landlordId, title, type, rent, location, description, amenities, genderPreference, isRented, latitude, longitude, landlordPhone, "PENDING");
-    }
-
-    public Listing(String id, String landlordId, String title, String type, double rent, String location, String description, String amenities, String genderPreference, boolean isRented, double latitude, double longitude, String landlordPhone, String status) {
+    public Listing(String id, String landlordId, String title, String type, double rent, String location, String description, String amenities, String genderPreference, boolean isRented, String mapLink, String landlordPhone, String status, int postNumber) {
         this.id = id;
         this.landlordId = landlordId;
         this.title = title;
@@ -38,10 +35,10 @@ public class Listing implements Serializable {
         this.amenities = amenities;
         this.genderPreference = genderPreference;
         this.isRented = isRented;
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.mapLink = mapLink;
         this.landlordPhone = landlordPhone;
         this.status = status != null ? status : "PENDING";
+        this.postNumber = postNumber > 0 ? postNumber : 1000;
     }
 
     public String getId() { return id; }
@@ -74,15 +71,19 @@ public class Listing implements Serializable {
     public boolean isRented() { return isRented; }
     public void setRented(boolean rented) { isRented = rented; }
 
-    public double getLatitude() { return latitude; }
-    public void setLatitude(double latitude) { this.latitude = latitude; }
-
-    public double getLongitude() { return longitude; }
-    public void setLongitude(double longitude) { this.longitude = longitude; }
+    public String getMapLink() { return mapLink; }
+    public void setMapLink(String mapLink) { this.mapLink = mapLink; }
     
     public String getLandlordPhone() { return landlordPhone; }
     public void setLandlordPhone(String landlordPhone) { this.landlordPhone = landlordPhone; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public int getPostNumber() { return postNumber; }
+    public void setPostNumber(int postNumber) { this.postNumber = postNumber; }
+
+    public String getFormattedPostNumber() {
+        return "#BB-" + (postNumber > 0 ? postNumber : 1000);
+    }
 }

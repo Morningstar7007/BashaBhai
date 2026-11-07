@@ -14,6 +14,7 @@
         android:roundIcon="@drawable/bashabhai_logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.BashaBhai">
+
         <activity
             android:name=".WelcomeActivity"
             android:exported="true"
@@ -36,13 +37,7 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".FavoritesActivity"
-            android:exported="false" />
-        <activity
             android:name=".ListingDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ProfileActivity"
             android:exported="false" />
         <activity
             android:name=".AdminActivity"

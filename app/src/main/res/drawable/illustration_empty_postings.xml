@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Outer Frame -->
+    <path
+        android:fillColor="#9E9E9E"
+        android:pathData="M19,3H5c-1.1,0 -2,0.9 -2,2v14c0,1.1 0.9,2 2,2h14c1.1,0 2,-0.9 2,-2V5c0,-1.1 -0.9,-2 -2,-2zM19,19H5V5h14v14z"/>
+    <!-- House Icon -->
+    <path
+        android:fillColor="#9E9E9E"
+        android:pathData="M12,7.5L7,11.5V17.5H10V14.5H14V17.5H17V11.5L12,7.5ZM12,9.3L15.5,12.1V16H14.5V13H9.5V16H8.5V12.1L12,9.3Z"/>
+</vector>

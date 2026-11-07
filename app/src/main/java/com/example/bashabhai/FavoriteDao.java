@@ -16,9 +16,9 @@ public interface FavoriteDao {
     @Delete
     void deleteFavorite(FavoriteListing listing);
 
-    @Query("SELECT * FROM favorites")
-    List<FavoriteListing> getAllFavorites();
+    @Query("SELECT * FROM favorites WHERE userId = :userId")
+    List<FavoriteListing> getAllFavorites(String userId);
 
-    @Query("SELECT EXISTS(SELECT 1 FROM favorites WHERE id = :id LIMIT 1)")
-    boolean isFavorite(String id);
+    @Query("SELECT EXISTS(SELECT 1 FROM favorites WHERE id = :id AND userId = :userId LIMIT 1)")
+    boolean isFavorite(String id, String userId);
 }

@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">BashaBhai</string>
+    <string name="map_pin_center">Map Pin Center</string>
+    <string name="confirm_exact_location">Confirm Exact Location</string>
+
+    <!-- Profile Strings -->
+    <string name="my_profile">My Profile</string>
+    <string name="name">Name</string>
+    <string name="loading">Loading...</string>
+    <string name="email">Email</string>
+    <string name="account_role">Account Role</string>
+    <string name="student_caps">STUDENT</string>
+    <string name="admin_approvals_panel">Admin Approvals Panel</string>
+    <string name="logout">Logout</string>
 </resources>

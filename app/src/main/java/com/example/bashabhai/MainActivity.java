@@ -1,14 +1,14 @@
 package com.example.bashabhai;
 
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Toast;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.fragment.app.Fragment;
 
 import android.Manifest;
 import android.content.Intent;
@@ -16,6 +16,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.Build;
+import android.widget.Toast;
 
 import com.example.bashabhai.databinding.ActivityMainBinding;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,14 +26,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-    private ListingAdapter adapter;
-    private DatabaseReference databaseReference;
     private NetworkChangeReceiver networkReceiver;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
@@ -46,39 +42,40 @@ public class MainActivity extends AppCompatActivity {
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
             int topPadding = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top;
-            binding.recyclerView.setPadding(
-                binding.recyclerView.getPaddingLeft(),
-                topPadding,
-                binding.recyclerView.getPaddingRight(),
-                binding.recyclerView.getPaddingBottom()
-            );
+            binding.fragmentContainer.setPadding(0, topPadding, 0, 0);
             return insets;
         });
 
         mAuth = FirebaseAuth.getInstance();
         setupAuthStateListener();
 
-        setupRecyclerView();
+        // Initial fragment setup
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new ListingsFragment())
+                    .commit();
+        }
 
-        databaseReference = FirebaseDb.getRef("Listings");
-
-        binding.fabAddListing.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, AddListingActivity.class));
-        });
-
-        // Setup Bottom Navigation
         binding.bottomNavigation.setOnItemSelectedListener(item -> {
+            Fragment selectedFragment = null;
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
-                return true;
+                selectedFragment = new ListingsFragment();
+            } else if (itemId == R.id.nav_my_postings) {
+                selectedFragment = new MyPostingsFragment();
             } else if (itemId == R.id.nav_favorites) {
-                startActivity(new Intent(MainActivity.this, FavoritesActivity.class));
-                return false;
+                selectedFragment = new FavoritesFragment();
             } else if (itemId == R.id.nav_profile) {
-                startActivity(new Intent(MainActivity.this, ProfileActivity.class));
-                return false;
+                selectedFragment = new ProfileFragment();
             }
-            return false;
+
+            if (selectedFragment != null) {
+                getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                        .replace(R.id.fragment_container, selectedFragment)
+                        .commit();
+            }
+            return true;
         });
         
         fetchUserRoleAndConfigureUI();
@@ -107,25 +104,26 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     currentUserRole = "STUDENT";
                 }
-
-                applyRoleBasedUI();
+                updateNavMenu();
             }
 
             @Override
             public void onCancelled(DatabaseError error) {
-                applyRoleBasedUI();
+                updateNavMenu();
             }
         });
     }
 
-    private void applyRoleBasedUI() {
+    private void updateNavMenu() {
+        Menu menu = binding.bottomNavigation.getMenu();
+        MenuItem myPostingsItem = menu.findItem(R.id.nav_my_postings);
+        
         if ("STUDENT".equalsIgnoreCase(currentUserRole)) {
-            binding.fabAddListing.setVisibility(View.GONE);
+            if (myPostingsItem != null) myPostingsItem.setVisible(false);
         } else {
             // LANDLORD or ADMIN
-            binding.fabAddListing.setVisibility(View.VISIBLE);
+            if (myPostingsItem != null) myPostingsItem.setVisible(true);
         }
-        fetchListingsFromDatabase();
     }
 
     private void checkNotificationPermissionAndStartService() {
@@ -194,54 +192,5 @@ public class MainActivity extends AppCompatActivity {
         if (networkReceiver != null) {
             unregisterReceiver(networkReceiver);
         }
-    }
-
-    private void setupRecyclerView() {
-        adapter = new ListingAdapter(listing -> {
-            Intent intent = new Intent(MainActivity.this, ListingDetailActivity.class);
-            intent.putExtra("LISTING", listing);
-            startActivity(intent);
-        });
-        binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        binding.recyclerView.setAdapter(adapter);
-    }
-    
-    private void fetchListingsFromDatabase() {
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                List<Listing> fetchedListings = new ArrayList<>();
-                FirebaseUser currentUser = mAuth.getCurrentUser();
-                String currentUid = currentUser != null ? currentUser.getUid() : "";
-
-                for (DataSnapshot postSnapshot : snapshot.getChildren()) {
-                    Listing listing = postSnapshot.getValue(Listing.class);
-                    if (listing != null) {
-                        String status = listing.getStatus() != null ? listing.getStatus() : "APPROVED";
-                        
-                        if ("ADMIN".equalsIgnoreCase(currentUserRole)) {
-                            // Admin sees all listings
-                            fetchedListings.add(listing);
-                        } else if ("LANDLORD".equalsIgnoreCase(currentUserRole)) {
-                            // Landlord sees approved listings + their own pending/rented listings
-                            if ("APPROVED".equalsIgnoreCase(status) || currentUid.equals(listing.getLandlordId())) {
-                                fetchedListings.add(listing);
-                            }
-                        } else {
-                            // Student ONLY sees APPROVED listings
-                            if ("APPROVED".equalsIgnoreCase(status)) {
-                                fetchedListings.add(listing);
-                            }
-                        }
-                    }
-                }
-                adapter.setListings(fetchedListings);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(MainActivity.this, "Failed to load listings.", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 }
