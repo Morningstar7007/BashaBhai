@@ -76,7 +76,7 @@ public class ListingAdapter extends RecyclerView.Adapter<ListingAdapter.ListingV
             binding.tvGender.setText(listing.getGenderPreference());
             binding.tvRent.setText("৳" + listing.getRent());
 
-            // Fetch Landlord Details (Name & Verification Badge)
+            // Fetch Landlord Details (Name, Rating & Verification Badge)
             if (listing.getLandlordId() != null) {
                 FirebaseDb.getRef("Users").child(listing.getLandlordId())
                         .addListenerForSingleValueEvent(new ValueEventListener() {
@@ -93,6 +93,15 @@ public class ListingAdapter extends RecyclerView.Adapter<ListingAdapter.ListingV
                             binding.tvLandlordName.setVisibility(View.VISIBLE);
                             binding.tvLandlordName.setText("Posted by: " + name);
 
+                            // Setup Rating Badge
+                            if (!isAdminUser && user.getTotalReviews() > 0) {
+                                double avg = user.getRatingSum() / user.getTotalReviews();
+                                binding.tvRating.setVisibility(View.VISIBLE);
+                                binding.tvRating.setText(String.format("⭐ %.1f (%d)", avg, user.getTotalReviews()));
+                            } else {
+                                binding.tvRating.setVisibility(View.GONE);
+                            }
+
                             // Admin posts are ALWAYS verified 🟢
                             if (isAdminUser || user.isVerified() || "APPROVED".equalsIgnoreCase(user.getVerificationStatus())) {
                                 binding.tvVerifiedBadge.setVisibility(View.VISIBLE);
@@ -108,6 +117,7 @@ public class ListingAdapter extends RecyclerView.Adapter<ListingAdapter.ListingV
             } else {
                 binding.tvLandlordName.setVisibility(View.GONE);
                 binding.tvVerifiedBadge.setVisibility(View.GONE);
+                binding.tvRating.setVisibility(View.GONE);
             }
 
             if (listing.isRented() || "RENTED".equalsIgnoreCase(listing.getStatus())) {
@@ -120,7 +130,13 @@ public class ListingAdapter extends RecyclerView.Adapter<ListingAdapter.ListingV
                 binding.tvStatus.setTextColor(Color.parseColor("#FF9800"));
             } else if ("REJECTED".equalsIgnoreCase(listing.getStatus())) {
                 binding.tvStatus.setVisibility(View.VISIBLE);
-                binding.tvStatus.setText("STATUS: REJECTED");
+                
+                String text = "STATUS: REJECTED";
+                if (listing.getRejectionReason() != null && !listing.getRejectionReason().isEmpty()) {
+                    text += "\nReason: " + listing.getRejectionReason();
+                }
+                
+                binding.tvStatus.setText(text);
                 binding.tvStatus.setTextColor(Color.parseColor("#D32F2F"));
             } else {
                 binding.tvStatus.setVisibility(View.GONE);

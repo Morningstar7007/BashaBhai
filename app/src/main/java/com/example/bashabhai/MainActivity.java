@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.ViewCompat;
@@ -20,6 +21,7 @@ import android.widget.Toast;
 
 import com.example.bashabhai.databinding.ActivityMainBinding;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -95,11 +97,11 @@ public class MainActivity extends AppCompatActivity {
         DatabaseReference userRef = FirebaseDb.getRef("Users").child(user.getUid());
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot snapshot) {
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
                 User userProfile = snapshot.getValue(User.class);
                 if (userProfile != null && userProfile.getRole() != null) {
                     currentUserRole = userProfile.getRole();
-                } else if (user.getEmail() != null && user.getEmail().equalsIgnoreCase("admin@bashabhai.com")) {
+                } else if (user.getEmail() != null && AdminConfig.isAdmin(user.getEmail())) {
                     currentUserRole = "ADMIN";
                 } else {
                     currentUserRole = "STUDENT";
@@ -108,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {
+            public void onCancelled(@NonNull DatabaseError error) {
                 updateNavMenu();
             }
         });
@@ -169,7 +171,11 @@ public class MainActivity extends AppCompatActivity {
         } else {
             user.reload().addOnCompleteListener(task -> {
                 if (!task.isSuccessful()) {
-                    forceLogout("Account has been deleted or disabled.");
+                    Exception exception = task.getException();
+                    if (exception instanceof FirebaseAuthInvalidUserException) {
+                        forceLogout("Account has been deleted or disabled.");
+                    }
+                    // If it is a Network exception, we just ignore it!
                 }
             });
         }

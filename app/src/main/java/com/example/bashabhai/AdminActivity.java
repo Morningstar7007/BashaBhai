@@ -4,6 +4,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -11,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.bashabhai.databinding.ActivityAdminBinding;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -89,12 +93,16 @@ public class AdminActivity extends AppCompatActivity {
         verificationsAdapter = new VerificationAdapter(new VerificationAdapter.OnActionListener() {
             @Override
             public void onApprove(VerificationRequest request) {
+                if (!NetworkUtils.isNetworkAvailable(AdminActivity.this)) {
+                    Toast.makeText(AdminActivity.this, "No internet connection.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 approveVerification(request);
             }
 
             @Override
             public void onReject(VerificationRequest request) {
-                rejectVerification(request);
+                promptRejectVerification(request);
             }
         });
         binding.rvPendingVerifications.setLayoutManager(new LinearLayoutManager(this));
@@ -172,23 +180,60 @@ public class AdminActivity extends AppCompatActivity {
         DatabaseReference userRef = FirebaseDb.getRef("Users").child(uid);
         
         userRef.child("verified").setValue(true);
-        userRef.child("verificationStatus").setValue("APPROVED").addOnCompleteListener(task -> {
+        userRef.child("verificationStatus").setValue("APPROVED");
+        userRef.child("verificationRejectionReason").setValue("").addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 verificationsRef.child(uid).removeValue();
                 Toast.makeText(AdminActivity.this, "Landlord Verified 🟢 successfully!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(AdminActivity.this, "Failed to approve verification.", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void rejectVerification(VerificationRequest request) {
-        String uid = request.getUserId();
+    private void promptRejectVerification(VerificationRequest request) {
+        EditText input = new EditText(this);
+        input.setHint("Enter reason for rejection...");
+        
+        FrameLayout container = new FrameLayout(this);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.leftMargin = 50;
+        params.rightMargin = 50;
+        input.setLayoutParams(params);
+        container.addView(input);
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Reject Verification")
+                .setMessage("Please provide feedback for the landlord:")
+                .setView(container)
+                .setPositiveButton("Reject", (dialog, which) -> {
+                    if (!NetworkUtils.isNetworkAvailable(this)) {
+                        Toast.makeText(this, "No internet connection.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    String reason = input.getText().toString().trim();
+                    if (reason.isEmpty()) {
+                        Toast.makeText(this, "A reason is required to reject!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        executeRejectVerification(request.getUserId(), reason);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void executeRejectVerification(String uid, String reason) {
         DatabaseReference userRef = FirebaseDb.getRef("Users").child(uid);
         
         userRef.child("verified").setValue(false);
-        userRef.child("verificationStatus").setValue("REJECTED").addOnCompleteListener(task -> {
+        userRef.child("verificationStatus").setValue("REJECTED");
+        userRef.child("verificationRejectionReason").setValue(reason).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 verificationsRef.child(uid).removeValue();
                 Toast.makeText(AdminActivity.this, "Verification Rejected 🔴.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(AdminActivity.this, "Failed to reject verification.", Toast.LENGTH_SHORT).show();
             }
         });
     }

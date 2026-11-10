@@ -32,6 +32,7 @@
                 android:contentDescription="@string/app_name"/>
 
             <ImageView
+                android:id="@+id/ivCameraIcon"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_gravity="bottom|end"
@@ -39,18 +40,20 @@
                 app:tint="@color/white"
                 android:background="@drawable/rounded_tag_primary"
                 android:padding="6dp"
-                android:contentDescription="Edit photo"/>
+                android:contentDescription="@string/edit_photo"/>
         </FrameLayout>
 
         <TextView
+            android:id="@+id/tvTapToChangePhoto"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tap photo to change"
+            android:text="@string/tap_photo_to_change"
             android:textSize="12sp"
             android:textColor="@color/primary"
             android:layout_marginBottom="16dp"/>
 
         <TextView
+            android:id="@+id/tvProfileTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/my_profile"
@@ -85,8 +88,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="16dp">
+                    android:gravity="center_vertical">
 
                     <TextView
                         android:id="@+id/tvProfileName"
@@ -101,7 +103,7 @@
                         android:id="@+id/tvVerificationBadge"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Unverified 🔴"
+                        android:text="@string/unverified"
                         android:textSize="12sp"
                         android:textStyle="bold"
                         android:textColor="#D32F2F"
@@ -109,10 +111,21 @@
                         android:visibility="gone"/>
                 </LinearLayout>
 
+                <TextView
+                    android:id="@+id/tvVerificationRejection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Reason: ..."
+                    android:textSize="12sp"
+                    android:textColor="@color/error"
+                    android:layout_marginTop="4dp"
+                    android:visibility="gone"/>
+
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:background="#E0E0E0"
+                    android:layout_marginTop="16dp"
                     android:layout_marginBottom="16dp"/>
 
                 <TextView
@@ -131,7 +144,7 @@
                     android:textColor="@color/on_surface"
                     android:layout_marginBottom="16dp"/>
 
-                <!-- Phone Details -->
+                <!-- Phone Details (Landlords/Admins) -->
                 <LinearLayout
                     android:id="@+id/llLandlordDetails"
                     android:layout_width="match_parent"
@@ -148,7 +161,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Contact Phone Number"
+                        android:text="@string/contact_phone_number"
                         android:textColor="@color/primary"
                         android:textSize="14sp"/>
 
@@ -156,7 +169,82 @@
                         android:id="@+id/tvProfilePhone"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Not Set"
+                        android:text="@string/not_set"
+                        android:textSize="18sp"
+                        android:textColor="@color/on_surface"
+                        android:layout_marginBottom="16dp"/>
+                </LinearLayout>
+
+                <!-- Student Specific Details -->
+                <LinearLayout
+                    android:id="@+id/llStudentDetails"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#E0E0E0"
+                        android:layout_marginBottom="16dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/contact_phone_number"
+                        android:textColor="@color/primary"
+                        android:textSize="14sp"/>
+
+                    <TextView
+                        android:id="@+id/tvStudentPhone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/not_set"
+                        android:textSize="18sp"
+                        android:textColor="@color/on_surface"
+                        android:layout_marginBottom="16dp"/>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#E0E0E0"
+                        android:layout_marginBottom="16dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/student_department"
+                        android:textColor="@color/primary"
+                        android:textSize="14sp"/>
+
+                    <TextView
+                        android:id="@+id/tvStudentDept"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/not_set"
+                        android:textSize="18sp"
+                        android:textColor="@color/on_surface"
+                        android:layout_marginBottom="16dp"/>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#E0E0E0"
+                        android:layout_marginBottom="16dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/student_batch"
+                        android:textColor="@color/primary"
+                        android:textSize="14sp"/>
+
+                    <TextView
+                        android:id="@+id/tvStudentBatch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/not_set"
                         android:textSize="18sp"
                         android:textColor="@color/on_surface"
                         android:layout_marginBottom="16dp"/>
@@ -188,13 +276,58 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Reviews Section (Landlords Only) -->
+        <LinearLayout
+            android:id="@+id/llProfileReviewsSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/my_reviews"
+                android:textColor="@color/on_surface"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:layout_marginBottom="8dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvProfileReviews"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/tvProfileNoReviews"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/no_reviews_yet"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnViewAllReviews"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/view_all_reviews"
+                android:textColor="@color/primary"
+                android:visibility="gone"/>
+        </LinearLayout>
+
         <!-- Profile Actions -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnEditProfile"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="Edit Profile"
+            android:text="@string/edit_profile"
             android:textColor="@color/on_surface"
             app:strokeColor="#D1D5DB"
             app:icon="@android:drawable/ic_menu_edit"
@@ -208,7 +341,7 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="Update Password"
+            android:text="@string/update_password"
             android:textColor="@color/on_surface"
             app:strokeColor="#D1D5DB"
             app:icon="@android:drawable/ic_lock_idle_lock"
@@ -222,7 +355,7 @@
             android:id="@+id/btnRequestVerification"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="Request Verification"
+            android:text="@string/request_verification"
             android:textColor="@color/on_surface"
             app:backgroundTint="@android:color/transparent"
             app:strokeColor="#4CAF50"

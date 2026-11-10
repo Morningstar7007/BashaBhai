@@ -87,6 +87,8 @@ public class FavoritesFragment extends Fragment {
                 l.setDescription(f.getDescription());
                 l.setMapLink(f.getMapLink());
                 l.setPostNumber(f.getPostNumber());
+                l.setRejectionReason(f.getRejectionReason());
+                l.setImageBase64List(f.getImageBase64List());
                 displayListings.add(l);
             }
             adapter.setListings(displayListings);

@@ -1,15 +1,27 @@
 package com.example.bashabhai;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Base64;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.bumptech.glide.Glide;
 import com.example.bashabhai.databinding.ActivityAddListingBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -17,11 +29,20 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class AddListingActivity extends AppCompatActivity {
 
     private ActivityAddListingBinding binding;
     private DatabaseReference databaseReference;
+    private FirebaseFirestore firestore;
     private FirebaseAuth mAuth;
     
     private boolean isEditMode = false;
@@ -29,6 +50,27 @@ public class AddListingActivity extends AppCompatActivity {
     private String existingStatus = "PENDING";
     private Listing editingListingObj = null;
     private String currentUserRole = "LANDLORD";
+    
+    private final List<String> selectedImagesBase64 = new ArrayList<>();
+    
+    private final ActivityResultLauncher<String> pickMultipleImagesLauncher = registerForActivityResult(
+            new ActivityResultContracts.GetMultipleContents(), uris -> {
+                if (uris != null && !uris.isEmpty()) {
+                    int limit = Math.min(uris.size(), 5 - selectedImagesBase64.size());
+                    if (limit < uris.size()) {
+                        Toast.makeText(this, "Can only add up to 5 photos total.", Toast.LENGTH_SHORT).show();
+                    }
+                    
+                    for (int i = 0; i < limit; i++) {
+                        String base64 = compressAndEncodeImage(uris.get(i));
+                        if (base64 != null) {
+                            selectedImagesBase64.add(base64);
+                        }
+                    }
+                    updateImageThumbnails();
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,13 +87,93 @@ public class AddListingActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDb.getRef("Listings");
+        firestore = FirebaseFirestore.getInstance();
 
         setupDropdowns();
         
         checkIfEditMode();
         fetchCurrentUserRoleAndDefaults();
         
+        binding.btnAddPhotos.setOnClickListener(v -> {
+            if (selectedImagesBase64.size() >= 5) {
+                Toast.makeText(this, "Maximum 5 photos allowed.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            pickMultipleImagesLauncher.launch("image/*");
+        });
+        
         binding.btnSubmitListing.setOnClickListener(v -> submitListing());
+    }
+    
+    private String compressAndEncodeImage(Uri uri) {
+        try {
+            InputStream inputStream = getContentResolver().openInputStream(uri);
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            if (inputStream != null) inputStream.close();
+            
+            if (bitmap == null) return null;
+
+            int maxSize = 600; 
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
+            float ratio = (float) width / (float) height;
+            if (ratio > 1) {
+                width = maxSize;
+                height = (int) (width / ratio);
+            } else {
+                height = maxSize;
+                width = (int) (height * ratio);
+            }
+            Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos); 
+            byte[] imageBytes = baos.toByteArray();
+            return Base64.encodeToString(imageBytes, Base64.DEFAULT);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    private void updateImageThumbnails() {
+        binding.llImageThumbnails.removeAllViews();
+        binding.llImageThumbnails.addView(binding.btnAddPhotos);
+        
+        if (selectedImagesBase64.size() >= 5) {
+            binding.btnAddPhotos.setVisibility(View.GONE);
+        } else {
+            binding.btnAddPhotos.setVisibility(View.VISIBLE);
+        }
+        
+        for (int i = 0; i < selectedImagesBase64.size(); i++) {
+            final int index = i;
+            String base64 = selectedImagesBase64.get(i);
+            
+            View thumbView = LayoutInflater.from(this).inflate(R.layout.item_carousel_image, binding.llImageThumbnails, false);
+            ImageView iv = thumbView.findViewById(R.id.ivCarousel);
+            
+            android.widget.LinearLayout.LayoutParams params = new android.widget.LinearLayout.LayoutParams(300, 300);
+            params.setMarginEnd(24);
+            thumbView.setLayoutParams(params);
+            
+            try {
+                byte[] decodedBytes = Base64.decode(base64, Base64.DEFAULT);
+                Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                Glide.with(this).load(bitmap).centerCrop().into(iv);
+            } catch (Exception e) {
+                iv.setImageResource(R.drawable.bashabhai_logo);
+            }
+            
+            // Long press to remove photo
+            thumbView.setOnLongClickListener(v -> {
+                selectedImagesBase64.remove(index);
+                updateImageThumbnails();
+                Toast.makeText(this, "Photo removed", Toast.LENGTH_SHORT).show();
+                return true;
+            });
+            
+            binding.llImageThumbnails.addView(thumbView, binding.llImageThumbnails.getChildCount() - 1);
+        }
     }
     
     private void fetchCurrentUserRoleAndDefaults() {
@@ -111,7 +233,12 @@ public class AddListingActivity extends AppCompatActivity {
             if (editingListingObj != null) {
                 isEditMode = true;
                 existingListingId = editingListingObj.getId();
-                existingStatus = editingListingObj.getStatus() != null ? editingListingObj.getStatus() : "PENDING";
+                
+                if ("REJECTED".equalsIgnoreCase(editingListingObj.getStatus())) {
+                    existingStatus = "PENDING";
+                } else {
+                    existingStatus = editingListingObj.getStatus() != null ? editingListingObj.getStatus() : "PENDING";
+                }
                 
                 binding.etTitle.setText(editingListingObj.getTitle());
                 binding.actType.setText(editingListingObj.getType(), false);
@@ -123,12 +250,29 @@ public class AddListingActivity extends AppCompatActivity {
                 binding.actGender.setText(editingListingObj.getGenderPreference(), false);
                 binding.etDescription.setText(editingListingObj.getDescription());
                 
+                // Fetch images from Firestore if editing
+                firestore.collection("ListingImages").document(existingListingId).get()
+                        .addOnSuccessListener(documentSnapshot -> {
+                            if (documentSnapshot.exists() && documentSnapshot.contains("images")) {
+                                List<String> fetchedImages = (List<String>) documentSnapshot.get("images");
+                                if (fetchedImages != null) {
+                                    selectedImagesBase64.addAll(fetchedImages);
+                                    updateImageThumbnails();
+                                }
+                            }
+                        });
+                
                 binding.btnSubmitListing.setText("Update Listing");
             }
         }
     }
 
     private void submitListing() {
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            Toast.makeText(this, "No internet connection.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String title = binding.etTitle.getText().toString().trim();
         String type = binding.actType.getText().toString().trim();
         String rentStr = binding.etRent.getText().toString().trim();
@@ -176,38 +320,57 @@ public class AddListingActivity extends AppCompatActivity {
                     if (committed && snapshot != null && snapshot.getValue(Integer.class) != null) {
                         assignedNumber = snapshot.getValue(Integer.class);
                     }
-                    saveListingToDatabase(listingId, landlordId, title, type, rent, location, description, amenities, gender, mapLink, phone, finalStatus, assignedNumber);
+                    saveListingToDatabases(listingId, landlordId, title, type, rent, location, description, amenities, gender, mapLink, phone, finalStatus, assignedNumber);
                 }
             });
         } else {
             int currentNum = editingListingObj != null && editingListingObj.getPostNumber() > 0 ? editingListingObj.getPostNumber() : 1000;
-            saveListingToDatabase(existingListingId, landlordId, title, type, rent, location, description, amenities, gender, mapLink, phone, finalStatus, currentNum);
+            saveListingToDatabases(existingListingId, landlordId, title, type, rent, location, description, amenities, gender, mapLink, phone, finalStatus, currentNum);
         }
     }
 
-    private void saveListingToDatabase(String listingId, String landlordId, String title, String type, double rent, String location, String description, String amenities, String gender, String mapLink, String phone, String finalStatus, int postNumber) {
+    private void saveListingToDatabases(String listingId, String landlordId, String title, String type, double rent, String location, String description, String amenities, String gender, String mapLink, String phone, String finalStatus, int postNumber) {
+        if (listingId == null) return;
+        
+        // 1. Prepare Text Data for Realtime Database (Images are Excluded from this object!)
         Listing newListing = new Listing(
                 listingId, landlordId, title, type, rent, location, 
-                description, amenities, gender, false, mapLink, phone, finalStatus, postNumber
+                description, amenities, gender, false, mapLink, phone, finalStatus, postNumber, new ArrayList<>()
         );
+        newListing.setRejectionReason("");
 
-        if (listingId != null) {
-            databaseReference.child(listingId).setValue(newListing)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            if (isEditMode) {
-                                Toast.makeText(AddListingActivity.this, "Listing updated successfully!", Toast.LENGTH_SHORT).show();
-                            } else if ("APPROVED".equalsIgnoreCase(finalStatus)) {
-                                Toast.makeText(AddListingActivity.this, "Listing published", Toast.LENGTH_SHORT).show();
+        // 2. Prepare Image Data for Firestore
+        Map<String, Object> firestoreData = new HashMap<>();
+        firestoreData.put("images", selectedImagesBase64);
+
+        // Execute both saves simultaneously
+        databaseReference.child(listingId).setValue(newListing).addOnCompleteListener(task1 -> {
+            if (task1.isSuccessful()) {
+                
+                firestore.collection("ListingImages").document(listingId).set(firestoreData).addOnCompleteListener(task2 -> {
+                    if (task2.isSuccessful()) {
+                        if (isEditMode) {
+                            if ("PENDING".equalsIgnoreCase(finalStatus)) {
+                                Toast.makeText(AddListingActivity.this, "Listing updated and sent for Admin review!", Toast.LENGTH_LONG).show();
                             } else {
-                                Toast.makeText(AddListingActivity.this, "Listing submitted! Pending Admin approval.", Toast.LENGTH_LONG).show();
+                                Toast.makeText(AddListingActivity.this, "Listing updated successfully!", Toast.LENGTH_SHORT).show();
                             }
-                            finish();
+                        } else if ("APPROVED".equalsIgnoreCase(finalStatus)) {
+                            Toast.makeText(AddListingActivity.this, "Listing published", Toast.LENGTH_SHORT).show();
                         } else {
-                            binding.btnSubmitListing.setEnabled(true);
-                            Toast.makeText(AddListingActivity.this, "Failed to save listing.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AddListingActivity.this, "Listing submitted! Pending Admin approval.", Toast.LENGTH_LONG).show();
                         }
-                    });
-        }
+                        finish();
+                    } else {
+                        binding.btnSubmitListing.setEnabled(true);
+                        Toast.makeText(AddListingActivity.this, "Text saved, but failed to save images.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                
+            } else {
+                binding.btnSubmitListing.setEnabled(true);
+                Toast.makeText(AddListingActivity.this, "Failed to save listing.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

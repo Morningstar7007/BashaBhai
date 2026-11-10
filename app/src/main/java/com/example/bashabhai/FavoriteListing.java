@@ -2,6 +2,9 @@ package com.example.bashabhai;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
+import androidx.room.TypeConverters;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity(tableName = "favorites", primaryKeys = {"id", "userId"})
 public class FavoriteListing {
@@ -24,14 +27,20 @@ public class FavoriteListing {
     private String description;
     private String mapLink;
     private int postNumber;
+    private String rejectionReason;
+    
+    @TypeConverters(Converters.class)
+    private List<String> imageBase64List;
 
     public FavoriteListing() {
         this.id = "";
         this.userId = "";
         this.postNumber = 1000;
+        this.rejectionReason = "";
+        this.imageBase64List = new ArrayList<>();
     }
 
-    public FavoriteListing(@NonNull String id, @NonNull String userId, String landlordId, String title, String type, double rent, String location, String landlordPhone, String amenities, String genderPreference, String description, String mapLink, int postNumber) {
+    public FavoriteListing(@NonNull String id, @NonNull String userId, String landlordId, String title, String type, double rent, String location, String landlordPhone, String amenities, String genderPreference, String description, String mapLink, int postNumber, String rejectionReason, List<String> imageBase64List) {
         this.id = id;
         this.userId = userId;
         this.landlordId = landlordId;
@@ -45,6 +54,8 @@ public class FavoriteListing {
         this.description = description;
         this.mapLink = mapLink;
         this.postNumber = postNumber > 0 ? postNumber : 1000;
+        this.rejectionReason = rejectionReason != null ? rejectionReason : "";
+        this.imageBase64List = imageBase64List != null ? imageBase64List : new ArrayList<>();
     }
 
     @NonNull
@@ -87,6 +98,12 @@ public class FavoriteListing {
 
     public int getPostNumber() { return postNumber; }
     public void setPostNumber(int postNumber) { this.postNumber = postNumber; }
+    
+    public String getRejectionReason() { return rejectionReason; }
+    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+    
+    public List<String> getImageBase64List() { return imageBase64List; }
+    public void setImageBase64List(List<String> imageBase64List) { this.imageBase64List = imageBase64List; }
 
     public String getFormattedPostNumber() {
         return "#BB-" + (postNumber > 0 ? postNumber : 1000);

@@ -1,6 +1,8 @@
 package com.example.bashabhai;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Listing implements Serializable {
     private String id;
@@ -17,14 +19,20 @@ public class Listing implements Serializable {
     private String landlordPhone;
     private String status; // "PENDING", "APPROVED", "REJECTED", "RENTED"
     private int postNumber; // Human-readable unique serial number (e.g. 1001)
+    private String rejectionReason; // Provided by admin if REJECTED
+    
+    // NEW: List of Base64 encoded images
+    private List<String> imageBase64List; 
 
     // Required empty public constructor for Firebase
     public Listing() {
         this.status = "APPROVED"; // Default for legacy/fallback
         this.postNumber = 1000;
+        this.rejectionReason = "";
+        this.imageBase64List = new ArrayList<>();
     }
 
-    public Listing(String id, String landlordId, String title, String type, double rent, String location, String description, String amenities, String genderPreference, boolean isRented, String mapLink, String landlordPhone, String status, int postNumber) {
+    public Listing(String id, String landlordId, String title, String type, double rent, String location, String description, String amenities, String genderPreference, boolean isRented, String mapLink, String landlordPhone, String status, int postNumber, List<String> imageBase64List) {
         this.id = id;
         this.landlordId = landlordId;
         this.title = title;
@@ -39,6 +47,8 @@ public class Listing implements Serializable {
         this.landlordPhone = landlordPhone;
         this.status = status != null ? status : "PENDING";
         this.postNumber = postNumber > 0 ? postNumber : 1000;
+        this.rejectionReason = "";
+        this.imageBase64List = imageBase64List != null ? imageBase64List : new ArrayList<>();
     }
 
     public String getId() { return id; }
@@ -69,7 +79,7 @@ public class Listing implements Serializable {
     public void setGenderPreference(String genderPreference) { this.genderPreference = genderPreference; }
 
     public boolean isRented() { return isRented; }
-    public void setRented(boolean rented) { isRented = rented; }
+    public void setRented(boolean rented) { this.isRented = rented; }
 
     public String getMapLink() { return mapLink; }
     public void setMapLink(String mapLink) { this.mapLink = mapLink; }
@@ -82,6 +92,16 @@ public class Listing implements Serializable {
 
     public int getPostNumber() { return postNumber; }
     public void setPostNumber(int postNumber) { this.postNumber = postNumber; }
+    
+    public String getRejectionReason() { return rejectionReason; }
+    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+    
+    // Use Exclude so RTDB ignores this field, keeping RTDB lightweight
+    @com.google.firebase.database.Exclude
+    public List<String> getImageBase64List() { return imageBase64List; }
+    
+    @com.google.firebase.database.Exclude
+    public void setImageBase64List(List<String> imageBase64List) { this.imageBase64List = imageBase64List; }
 
     public String getFormattedPostNumber() {
         return "#BB-" + (postNumber > 0 ? postNumber : 1000);
