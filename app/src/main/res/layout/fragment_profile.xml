@@ -33,13 +33,13 @@
 
             <ImageView
                 android:id="@+id/ivCameraIcon"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:layout_gravity="bottom|end"
                 android:src="@android:drawable/ic_menu_camera"
                 app:tint="@color/white"
-                android:background="@drawable/rounded_tag_primary"
-                android:padding="6dp"
+                android:background="@drawable/bg_camera_badge_circle"
+                android:padding="7dp"
                 android:contentDescription="@string/edit_photo"/>
         </FrameLayout>
 

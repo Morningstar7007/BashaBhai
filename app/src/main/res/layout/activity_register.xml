@@ -55,7 +55,12 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:hintEnabled="false"
-            app:boxStrokeColor="@color/primary"
+            app:boxBackgroundColor="@color/input_box_background"
+            app:boxStrokeColor="@color/box_stroke_color"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -64,7 +69,7 @@
                 android:layout_height="wrap_content"
                 android:hint="Full Name"
                 android:textColorHint="@color/text_secondary"
-                android:textColor="@color/on_background"
+                android:textColor="@color/on_surface"
                 android:inputType="textPersonName"/>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -74,7 +79,12 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             app:hintEnabled="false"
-            app:boxStrokeColor="@color/primary"
+            app:boxBackgroundColor="@color/input_box_background"
+            app:boxStrokeColor="@color/box_stroke_color"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -83,7 +93,7 @@
                 android:layout_height="wrap_content"
                 android:hint="Email"
                 android:textColorHint="@color/text_secondary"
-                android:textColor="@color/on_background"
+                android:textColor="@color/on_surface"
                 android:inputType="textEmailAddress"/>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -95,7 +105,12 @@
             app:passwordToggleEnabled="true"
             app:passwordToggleTint="@color/text_secondary"
             app:hintEnabled="false"
-            app:boxStrokeColor="@color/primary"
+            app:boxBackgroundColor="@color/input_box_background"
+            app:boxStrokeColor="@color/box_stroke_color"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -104,7 +119,7 @@
                 android:layout_height="wrap_content"
                 android:hint="Password"
                 android:textColorHint="@color/text_secondary"
-                android:textColor="@color/on_background"
+                android:textColor="@color/on_surface"
                 android:inputType="textPassword"/>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -152,6 +167,7 @@
             android:layout_height="56dp"
             android:text="Create Account"
             android:textSize="16sp"
+            android:textColor="@color/white"
             android:layout_marginBottom="20dp"
             app:cornerRadius="28dp"/>
 
@@ -167,7 +183,7 @@
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1"
-                android:background="#D1D5DB"/>
+                android:background="@color/divider_color"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -180,7 +196,7 @@
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1"
-                android:background="#D1D5DB"/>
+                android:background="@color/divider_color"/>
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
@@ -190,7 +206,7 @@
             android:layout_height="56dp"
             android:text="Continue with Google"
             android:textColor="@color/on_surface"
-            app:strokeColor="#D1D5DB"
+            app:strokeColor="@color/input_box_stroke"
             app:iconTint="@null"
             android:layout_marginBottom="24dp"
             app:cornerRadius="28dp"/>

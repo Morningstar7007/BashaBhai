@@ -1,15 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#6246EA</color>
-    <color name="secondary">#009688</color>
-    <color name="background">#121212</color>
-    <color name="surface">#1E1E1E</color>
+    <color name="primary">#00B4D8</color> <!-- Bright Cyan for Dark Mode -->
+    <color name="primary_variant">#0096C7</color>
+    <color name="secondary">#F77F00</color> <!-- Vibrant Orange for Dark Mode -->
+    <color name="secondary_variant">#E85D04</color>
+
+    <color name="background">#0F172A</color> <!-- Deep Slate Dark Background -->
+    <color name="surface">#1E293B</color> <!-- Dark Navy Surface -->
     <color name="error">#CF6679</color>
-    <color name="on_primary">#FFFFFF</color>
-    <color name="on_secondary">#FFFFFF</color>
-    <color name="on_background">#FFFFFF</color>
-    <color name="on_surface">#FFFFFF</color>
-    <color name="text_secondary">#B0BEC5</color>
-    <color name="black">#FFFFFF</color>
-    <color name="white">#000000</color>
+
+    <color name="on_primary">#000000</color>
+    <color name="on_secondary">#000000</color>
+    <color name="on_background">#F8FAFC</color>
+    <color name="on_surface">#F1F5F9</color>
+
+    <color name="text_secondary">#94A3B8</color>
+
+    <!-- Input Box specific colors for Dark Mode -->
+    <color name="input_box_background">#1E293B</color>
+    <color name="input_box_stroke">#475569</color>
+    <color name="input_box_stroke_focused">#00B4D8</color>
+    <color name="divider_color">#334155</color>
+
+    <!-- Custom Tag Overlay (Dark Navy with opacity) for image tags -->
+    <color name="tag_overlay">#B30F172A</color>
+
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
 </resources>

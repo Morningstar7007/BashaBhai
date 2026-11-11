@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- NEW Image Carousel Container -->
+        <!-- Image Carousel Container -->
         <FrameLayout
             android:id="@+id/flCarouselContainer"
             android:layout_width="match_parent"
@@ -23,18 +23,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
 
-            <!-- Simple manual indicator: e.g. "1 / 3" -->
+            <!-- High-Contrast Pill Indicator (e.g. "1 / 3") -->
             <TextView
                 android:id="@+id/tvCarouselIndicator"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|center_horizontal"
                 android:layout_marginBottom="12dp"
-                android:background="@drawable/rounded_tag_primary"
+                android:background="@drawable/bg_image_indicator_pill"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="4dp"
-                android:textColor="@color/white"
-                android:textSize="12sp"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
                 android:textStyle="bold"
                 android:text="@string/carousel_indicator_placeholder"
                 android:elevation="4dp"/>

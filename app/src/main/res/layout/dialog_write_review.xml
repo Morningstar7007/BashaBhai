@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -17,14 +18,26 @@
         android:secondaryProgressTint="#F57F17"
         android:layout_marginBottom="16dp"/>
 
-    <EditText
-        android:id="@+id/etReviewText"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Share your experience (Optional)"
-        android:minLines="3"
-        android:gravity="top|start"
-        android:inputType="textMultiLine"
-        android:padding="12dp"
-        android:background="@android:drawable/editbox_background"/>
+        app:boxBackgroundColor="@color/input_box_background"
+        app:boxStrokeColor="@color/box_stroke_color"
+        app:boxCornerRadiusTopStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etReviewText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Share your experience (Optional)"
+            android:textColor="@color/on_surface"
+            android:textColorHint="@color/text_secondary"
+            android:minLines="3"
+            android:gravity="top|start"
+            android:inputType="textMultiLine"/>
+    </com.google.android.material.textfield.TextInputLayout>
 </LinearLayout>

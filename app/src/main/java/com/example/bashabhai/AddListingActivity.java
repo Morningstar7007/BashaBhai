@@ -1,6 +1,8 @@
 package com.example.bashabhai;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -8,7 +10,6 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -18,11 +19,19 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.example.bashabhai.databinding.ActivityAddListingBinding;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -30,6 +39,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import org.json.JSONException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -44,6 +55,9 @@ public class AddListingActivity extends AppCompatActivity {
     private DatabaseReference databaseReference;
     private FirebaseFirestore firestore;
     private FirebaseAuth mAuth;
+    
+    private FusedLocationProviderClient fusedLocationClient;
+    private RequestQueue requestQueue;
     
     private boolean isEditMode = false;
     private String existingListingId = null;
@@ -71,6 +85,18 @@ public class AddListingActivity extends AppCompatActivity {
                 }
             }
     );
+    
+    private final ActivityResultLauncher<String[]> locationPermissionRequest = registerForActivityResult(
+            new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+                Boolean fineLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
+                Boolean coarseLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
+                if (fineLocationGranted != null && fineLocationGranted || coarseLocationGranted != null && coarseLocationGranted) {
+                    fetchCurrentLocation();
+                } else {
+                    Toast.makeText(this, R.string.location_permission_denied, Toast.LENGTH_SHORT).show();
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +114,9 @@ public class AddListingActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDb.getRef("Listings");
         firestore = FirebaseFirestore.getInstance();
+        
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        requestQueue = Volley.newRequestQueue(this);
 
         setupDropdowns();
         
@@ -103,6 +132,76 @@ public class AddListingActivity extends AppCompatActivity {
         });
         
         binding.btnSubmitListing.setOnClickListener(v -> submitListing());
+        
+        binding.tilLocation.setEndIconOnClickListener(v -> checkLocationPermissionAndFetch());
+    }
+    
+    private void checkLocationPermissionAndFetch() {
+        if (!NetworkUtils.isNetworkAvailable(this)) {
+            Toast.makeText(this, "No internet connection.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && 
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            locationPermissionRequest.launch(new String[]{
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+        } else {
+            fetchCurrentLocation();
+        }
+    }
+    
+    private void fetchCurrentLocation() {
+        Toast.makeText(this, R.string.fetching_location, Toast.LENGTH_SHORT).show();
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && 
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+                .addOnSuccessListener(this, location -> {
+                    if (location != null) {
+                        fetchAddressFromCoordinates(location.getLatitude(), location.getLongitude());
+                    } else {
+                        Toast.makeText(this, "Could not determine location. Make sure GPS is enabled.", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error getting location", Toast.LENGTH_SHORT).show();
+                });
+    }
+    
+    private void fetchAddressFromCoordinates(double lat, double lon) {
+        String url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lon;
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
+                (Request.Method.GET, url, null, response -> {
+                    try {
+                        if (response.has("display_name")) {
+                            String address = response.getString("display_name");
+                            binding.etLocation.setText(address);
+                            Toast.makeText(this, "Address found!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(this, getString(R.string.location_failed), Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (JSONException e) {
+                        Toast.makeText(this, getString(R.string.location_failed), Toast.LENGTH_SHORT).show();
+                    }
+                }, error -> {
+                    Toast.makeText(this, getString(R.string.location_failed), Toast.LENGTH_SHORT).show();
+                }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("User-Agent", "BashaBhaiApp/1.0");
+                return headers;
+            }
+        };
+
+        requestQueue.add(jsonObjectRequest);
     }
     
     private String compressAndEncodeImage(Uri uri) {
@@ -254,8 +353,9 @@ public class AddListingActivity extends AppCompatActivity {
                 firestore.collection("ListingImages").document(existingListingId).get()
                         .addOnSuccessListener(documentSnapshot -> {
                             if (documentSnapshot.exists() && documentSnapshot.contains("images")) {
-                                List<String> fetchedImages = (List<String>) documentSnapshot.get("images");
-                                if (fetchedImages != null) {
+                                Object imagesObj = documentSnapshot.get("images");
+                                if (imagesObj instanceof List) {
+                                    List<String> fetchedImages = (List<String>) imagesObj;
                                     selectedImagesBase64.addAll(fetchedImages);
                                     updateImageThumbnails();
                                 }

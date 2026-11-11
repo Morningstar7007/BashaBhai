@@ -71,4 +71,51 @@
     <string name="add_photo">Add Photo</string>
     <string name="carousel_indicator_placeholder">1 / 3</string>
     <string name="room_image">Room Image</string>
+    <string name="use_current_location">Use current location</string>
+    <string name="fetching_location">Fetching exact address&#8230;</string>
+    <string name="location_failed">Failed to fetch address. Try again.</string>
+    <string name="location_permission_denied">Location permission is required for this feature.</string>
+
+    <!-- Auth Strings -->
+    <string name="welcome_back">Welcome Back</string>
+    <string name="log_in_subtitle">Log in to your account to continue.</string>
+    <string name="password">Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="sign_in">Sign In</string>
+    <string name="continue_with_google">CONTINUE WITH GOOGLE</string>
+    <string name="dont_have_account_sign_up">Don\'t have an account? Sign Up</string>
+    <string name="create_account">Create Account</string>
+    <string name="sign_up_subtitle">Sign up to get started with your dashboard.</string>
+    <string name="full_name">Full Name</string>
+    <string name="i_am_joining_as_a">I am joining as a:</string>
+    <string name="student">Student</string>
+    <string name="landlord_owner">Landlord / Owner</string>
+    <string name="already_have_account_sign_in">Already have an account? Sign In</string>
+
+    <!-- Tab Titles & Empty States -->
+    <string name="my_postings">My Postings</string>
+    <string name="create_plus">+ Create</string>
+    <string name="no_postings">No postings</string>
+    <string name="you_havent_posted_anything_yet">You haven\'t posted anything yet.</string>
+    <string name="tap_create_above_to_add_a_listing">Tap \'+ Create\' above to add a listing.</string>
+    <string name="saved_favorites">Saved Favorites</string>
+    <string name="no_offline_favorites_saved_yet">No offline favorites saved yet.</string>
+    <string name="tap_the_star_icon_on_a_listing_to_save_it">Tap the star icon on a listing to save it.</string>
+
+    <!-- Dialog Strings -->
+    <string name="select_broadcast_type">Select Broadcast Type</string>
+    <string name="banner_icon">Banner Icon</string>
+    <string name="in_app_banner">In-App Banner</string>
+    <string name="sticks_to_the_top_of_the_feed">Sticks to the top of the feed</string>
+    <string name="push_icon">Push Icon</string>
+    <string name="global_push_notification">Global Push Notification</string>
+    <string name="buzzes_every_users_phone_directly">Buzzes every user\'s phone directly</string>
+
+    <string name="create_a_post">+ Create a Post</string>
+    <string name="broadcast_message">Broadcast Message</string>
+
+    <!-- Weather Widget -->
+    <string name="weather_icon">Weather Icon</string>
+    <string name="temp_placeholder">--°C</string>
+    <string name="loading_weather">Loading weather in Dhaka&#8230;</string>
 </resources>

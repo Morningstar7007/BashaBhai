@@ -61,6 +61,12 @@ dependencies {
     implementation(libs.room.runtime)
     annotationProcessor(libs.room.compiler)
     
+    // Volley for API requests
+    implementation("com.android.volley:volley:1.2.1")
+    
+    // Google Play Services for Location
+    implementation("com.google.android.gms:play-services-location:21.2.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)

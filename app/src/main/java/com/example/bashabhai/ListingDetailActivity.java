@@ -81,7 +81,10 @@ public class ListingDetailActivity extends AppCompatActivity {
         firestore.collection("ListingImages").document(listing.getId()).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists() && documentSnapshot.contains("images")) {
-                        loadedImages = (List<String>) documentSnapshot.get("images");
+                        Object imagesObj = documentSnapshot.get("images");
+                        if (imagesObj instanceof List) {
+                            loadedImages = (List<String>) imagesObj;
+                        }
                         if (loadedImages != null && !loadedImages.isEmpty()) {
                             binding.flCarouselContainer.setVisibility(View.VISIBLE);
                             ImageCarouselAdapter carouselAdapter = new ImageCarouselAdapter(loadedImages);
@@ -277,6 +280,7 @@ public class ListingDetailActivity extends AppCompatActivity {
         binding.rvReviews.setAdapter(reviewAdapter);
         
         binding.btnViewAllReviews.setOnClickListener(v -> showAllReviewsDialog());
+        binding.btnWriteReview.setOnClickListener(v -> promptWriteReview());
         
         DatabaseReference reviewsRef = FirebaseDb.getRef("Reviews").child(listing.getLandlordId());
         reviewsRef.addValueEventListener(new ValueEventListener() {
@@ -395,6 +399,10 @@ public class ListingDetailActivity extends AppCompatActivity {
             if (task.isSuccessful()) {
                 // Update aggregate ratings via Transaction on the Landlord's User profile
                 updateLandlordAggregateRating(listing.getLandlordId(), rating, 1);
+                
+                // SEND NOTIFICATION TO LANDLORD
+                sendNotificationToUser(listing.getLandlordId(), "New Review Received! ⭐", "A student just left a " + rating + "-star review on your profile.");
+                
                 Toast.makeText(this, "Review submitted!", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Failed to submit review.", Toast.LENGTH_SHORT).show();
@@ -521,6 +529,9 @@ public class ListingDetailActivity extends AppCompatActivity {
             ref.child("status").setValue("APPROVED");
             ref.child("rejectionReason").setValue("").addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
+                    // SEND NOTIFICATION
+                    sendNotificationToUser(listing.getLandlordId(), "Listing Approved! ✅", "Your property '" + listing.getTitle() + "' is now live on the feed.");
+                    
                     Toast.makeText(this, "Listing Approved!", Toast.LENGTH_SHORT).show();
                     binding.llAdminControls.setVisibility(View.GONE);
                 } else {
@@ -639,6 +650,9 @@ public class ListingDetailActivity extends AppCompatActivity {
         ref.child("status").setValue("REJECTED");
         ref.child("rejectionReason").setValue(reason).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
+                // SEND NOTIFICATION
+                sendNotificationToUser(listing.getLandlordId(), "Listing Rejected 🔴", "Your property '" + listing.getTitle() + "' was rejected. Reason: " + reason);
+                
                 Toast.makeText(this, "Listing Rejected 🔴.", Toast.LENGTH_SHORT).show();
                 binding.llAdminControls.setVisibility(View.GONE);
                 
@@ -648,6 +662,16 @@ public class ListingDetailActivity extends AppCompatActivity {
                 Toast.makeText(this, "Failed to reject listing.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+    
+    private void sendNotificationToUser(String targetUid, String title, String message) {
+        if (targetUid == null) return;
+        DatabaseReference notifRef = FirebaseDb.getRef("Notifications").child(targetUid);
+        String notifId = notifRef.push().getKey();
+        if (notifId != null) {
+            AppNotification notif = new AppNotification(notifId, title, message, "SYSTEM", System.currentTimeMillis());
+            notifRef.child(notifId).setValue(notif);
+        }
     }
     
     private void toggleFavorite() {

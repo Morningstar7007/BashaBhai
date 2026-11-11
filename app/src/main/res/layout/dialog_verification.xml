@@ -21,7 +21,7 @@
         app:cardCornerRadius="8dp"
         app:cardElevation="0dp"
         app:strokeWidth="1dp"
-        app:strokeColor="#B0BEC5"
+        app:strokeColor="@color/input_box_stroke"
         app:cardBackgroundColor="@color/surface"
         android:layout_marginBottom="16dp"
         android:clickable="true"
@@ -76,7 +76,7 @@
         app:cardCornerRadius="8dp"
         app:cardElevation="0dp"
         app:strokeWidth="1dp"
-        app:strokeColor="#B0BEC5"
+        app:strokeColor="@color/input_box_stroke"
         app:cardBackgroundColor="@color/surface"
         android:clickable="true"
         android:focusable="true">

@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -35,6 +36,8 @@ public class ListingsFragment extends Fragment {
     private ListingAdapter adapter;
     private DatabaseReference databaseReference;
     private FirebaseAuth mAuth;
+
+    private AlertDialog selectionDialog;
     
     // Master list holds all data fetched from Firebase based on User Role
     private final List<Listing> masterListingList = new ArrayList<>();
@@ -59,7 +62,7 @@ public class ListingsFragment extends Fragment {
         setupSearchAndFilters();
         setupSwipeToRefresh();
         setupAnnouncement();
-        
+
         binding.btnCreatePost.setOnClickListener(v -> 
             startActivity(new Intent(requireActivity(), AddListingActivity.class))
         );
@@ -72,8 +75,121 @@ public class ListingsFragment extends Fragment {
     private void promptBroadcastMessage() {
         if (getContext() == null) return;
         
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_broadcast_selection, null);
+        View cvOptionBanner = dialogView.findViewById(R.id.cvOptionBanner);
+        View cvOptionPush = dialogView.findViewById(R.id.cvOptionPush);
+        
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext())
+                .setView(dialogView)
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+                
+        selectionDialog = builder.create();
+        
+        cvOptionBanner.setOnClickListener(v -> {
+            if (selectionDialog != null && selectionDialog.isShowing()) selectionDialog.dismiss();
+            promptBannerBroadcast();
+        });
+        
+        cvOptionPush.setOnClickListener(v -> {
+            if (selectionDialog != null && selectionDialog.isShowing()) selectionDialog.dismiss();
+            promptPushNotificationBroadcast();
+        });
+        
+        selectionDialog.show();
+    }
+    
+    private void promptPushNotificationBroadcast() {
+        if (getContext() == null) return;
+        
         EditText input = new EditText(getContext());
-        input.setHint("Enter announcement message...");
+        input.setHint("Enter push notification message...");
+        input.setLines(4);
+        input.setMaxLines(6);
+        
+        FrameLayout container = new FrameLayout(getContext());
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.leftMargin = 50;
+        params.rightMargin = 50;
+        input.setLayoutParams(params);
+        container.addView(input);
+
+        new MaterialAlertDialogBuilder(getContext())
+                .setTitle("🔔 Send Global Push")
+                .setMessage("This will send a direct phone notification to every registered user (except you).")
+                .setView(container)
+                .setPositiveButton("Send", (dialog, which) -> {
+                    if (!NetworkUtils.isNetworkAvailable(getContext())) {
+                        Toast.makeText(getContext(), "No internet connection.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    String message = input.getText().toString().trim();
+                    if (!message.isEmpty()) {
+                        executeGlobalPushBroadcast(message);
+                    } else {
+                        Toast.makeText(getContext(), "Message cannot be empty!", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+    
+    private void executeGlobalPushBroadcast(String message) {
+        if (getContext() == null) return;
+        
+        String myUid = mAuth.getUid();
+        if (myUid == null) return;
+        
+        Toast.makeText(getContext(), "Sending notifications...", Toast.LENGTH_SHORT).show();
+        
+        DatabaseReference usersRef = FirebaseDb.getRef("Users");
+        DatabaseReference notificationsRef = FirebaseDb.getRef("Notifications");
+        
+        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int sentCount = 0;
+                long timestamp = System.currentTimeMillis();
+                
+                for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                    String targetUid = userSnapshot.getKey();
+                    
+                    // Do not send the notification to the admin themselves
+                    if (targetUid != null && !targetUid.equals(myUid)) {
+                        String notifId = notificationsRef.child(targetUid).push().getKey();
+                        if (notifId != null) {
+                            AppNotification notif = new AppNotification(
+                                    notifId, 
+                                    "📢 Admin Announcement", 
+                                    message, 
+                                    "SYSTEM", 
+                                    timestamp
+                            );
+                            notificationsRef.child(targetUid).child(notifId).setValue(notif);
+                            sentCount++;
+                        }
+                    }
+                }
+                
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Successfully notified " + sentCount + " users!", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                if (getContext() != null) {
+                    Toast.makeText(getContext(), "Failed to fetch users for broadcast.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void promptBannerBroadcast() {
+        if (getContext() == null) return;
+        
+        EditText input = new EditText(getContext());
+        input.setHint("Enter banner message...");
         input.setLines(4);
         input.setMaxLines(6);
         
@@ -86,8 +202,8 @@ public class ListingsFragment extends Fragment {
         container.addView(input);
 
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext())
-                .setTitle("📢 Broadcast Announcement")
-                .setMessage(currentAnnouncementTimestamp > 0 ? "Send a global system notification to all users, or clear the current one:" : "Send a global system notification to all users:")
+                .setTitle("📢 In-App Banner")
+                .setMessage(currentAnnouncementTimestamp > 0 ? "Send a global banner to all users, or clear the current one:" : "Send a global banner to all users:")
                 .setView(container)
                 .setPositiveButton("Send New", (dialog, which) -> {
                     if (!NetworkUtils.isNetworkAvailable(getContext())) {
@@ -100,7 +216,7 @@ public class ListingsFragment extends Fragment {
                         ref.child("message").setValue(message);
                         ref.child("timestamp").setValue(System.currentTimeMillis()).addOnCompleteListener(task -> {
                             if (task.isSuccessful() && getContext() != null) {
-                                Toast.makeText(getContext(), "Announcement broadcasted!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), "Banner broadcasted!", Toast.LENGTH_SHORT).show();
                             }
                         });
                     } else {
@@ -121,7 +237,7 @@ public class ListingsFragment extends Fragment {
                 DatabaseReference ref = FirebaseDb.getRef("System").child("latestAnnouncement");
                 ref.removeValue().addOnCompleteListener(task -> {
                     if (task.isSuccessful() && getContext() != null) {
-                        Toast.makeText(getContext(), "Broadcast stopped.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Banner stopped.", Toast.LENGTH_SHORT).show();
                     }
                 });
             });

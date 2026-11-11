@@ -6,14 +6,17 @@ public class VerificationRequest {
     private String billBase64;
     private String nidPhotoUrl;
     private String billPhotoUrl;
+    private String status; // "PENDING", "APPROVED", "REJECTED"
 
     public VerificationRequest() {
+        this.status = "PENDING";
     }
 
     public VerificationRequest(String userId, String nidBase64, String billBase64) {
         this.userId = userId;
         this.nidBase64 = nidBase64;
         this.billBase64 = billBase64;
+        this.status = "PENDING";
     }
 
     public String getUserId() { return userId; }
@@ -30,4 +33,7 @@ public class VerificationRequest {
 
     public String getBillPhotoUrl() { return billPhotoUrl; }
     public void setBillPhotoUrl(String billPhotoUrl) { this.billPhotoUrl = billPhotoUrl; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

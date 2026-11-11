@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <!-- 60% Dark Overlay for maximum contrast on any photo -->
+    <solid android:color="#99000000" />
+    <corners android:radius="16dp" />
+</shape>

@@ -1,6 +1,7 @@
 package com.example.bashabhai;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.bashabhai.databinding.ActivityAdminBinding;
@@ -58,10 +60,16 @@ public class AdminActivity extends AppCompatActivity {
     private void setupTabButtons() {
         binding.btnTabListings.setOnClickListener(v -> {
             isListingsTab = true;
-            binding.btnTabListings.setBackgroundColor(getColor(R.color.primary));
+            
+            // Set Listings button to Active
+            binding.btnTabListings.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.primary)));
+            binding.btnTabListings.setStrokeColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.primary)));
             binding.btnTabListings.setTextColor(Color.WHITE);
-            binding.btnTabVerifications.setBackgroundColor(Color.TRANSPARENT);
-            binding.btnTabVerifications.setTextColor(getColor(R.color.on_surface));
+            
+            // Set Verifications button to Inactive
+            binding.btnTabVerifications.setBackgroundTintList(ColorStateList.valueOf(Color.TRANSPARENT));
+            binding.btnTabVerifications.setStrokeColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.text_secondary)));
+            binding.btnTabVerifications.setTextColor(ContextCompat.getColor(this, R.color.on_surface));
 
             binding.rvPendingListings.setVisibility(View.VISIBLE);
             binding.rvPendingVerifications.setVisibility(View.GONE);
@@ -70,10 +78,16 @@ public class AdminActivity extends AppCompatActivity {
 
         binding.btnTabVerifications.setOnClickListener(v -> {
             isListingsTab = false;
-            binding.btnTabVerifications.setBackgroundColor(getColor(R.color.primary));
+            
+            // Set Verifications button to Active
+            binding.btnTabVerifications.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.primary)));
+            binding.btnTabVerifications.setStrokeColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.primary)));
             binding.btnTabVerifications.setTextColor(Color.WHITE);
-            binding.btnTabListings.setBackgroundColor(Color.TRANSPARENT);
-            binding.btnTabListings.setTextColor(getColor(R.color.on_surface));
+            
+            // Set Listings button to Inactive
+            binding.btnTabListings.setBackgroundTintList(ColorStateList.valueOf(Color.TRANSPARENT));
+            binding.btnTabListings.setStrokeColor(ColorStateList.valueOf(ContextCompat.getColor(this, R.color.text_secondary)));
+            binding.btnTabListings.setTextColor(ContextCompat.getColor(this, R.color.on_surface));
 
             binding.rvPendingListings.setVisibility(View.GONE);
             binding.rvPendingVerifications.setVisibility(View.VISIBLE);
@@ -152,8 +166,12 @@ public class AdminActivity extends AppCompatActivity {
                 for (DataSnapshot postSnapshot : snapshot.getChildren()) {
                     VerificationRequest req = postSnapshot.getValue(VerificationRequest.class);
                     if (req != null) {
-                        req.setUserId(postSnapshot.getKey());
-                        requests.add(req);
+                        // Only fetch verifications that are PENDING
+                        String status = req.getStatus() != null ? req.getStatus() : "PENDING";
+                        if ("PENDING".equalsIgnoreCase(status)) {
+                            req.setUserId(postSnapshot.getKey());
+                            requests.add(req);
+                        }
                     }
                 }
 
@@ -183,7 +201,12 @@ public class AdminActivity extends AppCompatActivity {
         userRef.child("verificationStatus").setValue("APPROVED");
         userRef.child("verificationRejectionReason").setValue("").addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                verificationsRef.child(uid).removeValue();
+                // INSTEAD of deleting it, we save it historically by marking it APPROVED
+                verificationsRef.child(uid).child("status").setValue("APPROVED");
+                
+                // SEND NOTIFICATION
+                sendNotificationToUser(uid, "Verification Approved! ✅", "Congratulations! Your profile has been verified and you can now publish listings.");
+                
                 Toast.makeText(AdminActivity.this, "Landlord Verified 🟢 successfully!", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(AdminActivity.this, "Failed to approve verification.", Toast.LENGTH_SHORT).show();
@@ -230,11 +253,25 @@ public class AdminActivity extends AppCompatActivity {
         userRef.child("verificationStatus").setValue("REJECTED");
         userRef.child("verificationRejectionReason").setValue(reason).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                verificationsRef.child(uid).removeValue();
+                // INSTEAD of deleting it, we save it historically by marking it REJECTED
+                verificationsRef.child(uid).child("status").setValue("REJECTED");
+                
+                // SEND NOTIFICATION
+                sendNotificationToUser(uid, "Verification Rejected 🔴", "Your document verification failed. Reason: " + reason);
+                
                 Toast.makeText(AdminActivity.this, "Verification Rejected 🔴.", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(AdminActivity.this, "Failed to reject verification.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+    
+    private void sendNotificationToUser(String targetUid, String title, String message) {
+        DatabaseReference notifRef = FirebaseDb.getRef("Notifications").child(targetUid);
+        String notifId = notifRef.push().getKey();
+        if (notifId != null) {
+            AppNotification notif = new AppNotification(notifId, title, message, "SYSTEM", System.currentTimeMillis());
+            notifRef.child(notifId).setValue(notif);
+        }
     }
 }

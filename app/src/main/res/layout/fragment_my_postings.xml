@@ -9,18 +9,17 @@
     <!-- Top Header Bar with Title and Create Button -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="64dp"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingHorizontal="16dp"
-        android:paddingVertical="12dp"
         android:background="@color/surface">
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="My Postings"
+            android:text="@string/my_postings"
             android:textColor="@color/on_surface"
             android:textSize="22sp"
             android:textStyle="bold" />
@@ -28,11 +27,11 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAddPost"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="+ Create"
+            android:layout_height="48dp"
+            android:text="@string/create_plus"
             android:textSize="14sp"
             android:textStyle="bold"
-            app:cornerRadius="20dp"
+            app:cornerRadius="24dp"
             app:backgroundTint="@color/primary"
             android:textColor="@color/white" />
     </LinearLayout>
@@ -61,13 +60,13 @@
                 android:layout_width="120dp"
                 android:layout_height="120dp"
                 android:src="@drawable/illustration_empty_postings"
-                android:contentDescription="No postings"
+                android:contentDescription="@string/no_postings"
                 android:alpha="0.6"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="You haven't posted anything yet."
+                android:text="@string/you_havent_posted_anything_yet"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginTop="16dp"
@@ -76,7 +75,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tap '+ Create' above to add a listing."
+                android:text="@string/tap_create_above_to_add_a_listing"
                 android:textSize="14sp"
                 android:layout_marginTop="8dp"
                 android:textColor="@color/text_secondary"/>

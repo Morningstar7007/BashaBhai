@@ -63,10 +63,15 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilLocation"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
+            app:endIconMode="custom"
+            app:endIconDrawable="@android:drawable/ic_menu_mylocation"
+            app:endIconContentDescription="@string/use_current_location"
+            app:endIconTint="@color/primary"
             android:hint="@string/location_address">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etLocation"
@@ -182,7 +187,7 @@
                         android:layout_gravity="center"
                         android:src="@android:drawable/ic_menu_camera"
                         app:tint="@color/primary"
-                        android:contentDescription="Add Photo"/>
+                        android:contentDescription="@string/add_photo"/>
                 </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>

@@ -11,6 +11,9 @@
         <item name="colorOnSecondary">@color/on_secondary</item>
         <item name="colorOnBackground">@color/on_background</item>
         <item name="colorOnSurface">@color/on_surface</item>
+
+        <item name="textInputStyle">@style/Widget.BashaBhai.TextInputLayout.OutlinedBox</item>
+        <item name="editTextStyle">@style/Widget.BashaBhai.EditText</item>
     </style>
 
     <style name="Theme.BashaBhai" parent="Base.Theme.BashaBhai" />

@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-        startService(new Intent(this, NewListingService.class));
+        startService(new Intent(this, NotificationService.class));
     }
     
     @Override

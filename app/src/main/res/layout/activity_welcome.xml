@@ -56,6 +56,7 @@
             android:layout_height="56dp"
             android:text="Get Started"
             android:textSize="16sp"
+            android:textColor="@color/white"
             android:layout_marginBottom="20dp"
             app:cornerRadius="28dp"/>
 
@@ -71,7 +72,7 @@
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1"
-                android:background="#D1D5DB"/>
+                android:background="@color/divider_color"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -84,7 +85,7 @@
                 android:layout_width="0dp"
                 android:layout_height="1dp"
                 android:layout_weight="1"
-                android:background="#D1D5DB"/>
+                android:background="@color/divider_color"/>
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
@@ -94,7 +95,7 @@
             android:layout_height="56dp"
             android:text="Continue with Google"
             android:textColor="@color/on_surface"
-            app:strokeColor="#D1D5DB"
+            app:strokeColor="@color/input_box_stroke"
             app:iconTint="@null"
             android:layout_marginBottom="24dp"
             app:cornerRadius="28dp"/>
